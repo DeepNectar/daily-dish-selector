@@ -713,30 +713,6 @@
             border-radius: 12px;
         }
 
-        /* Manual Add date options */
-        .manual-date-options {
-            display: flex;
-            gap: 0.5rem;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 0.8rem;
-        }
-        .manual-date-options label {
-            display: flex;
-            align-items: center;
-            gap: 0.35rem;
-            cursor: pointer;
-            padding: 0.35rem 0.9rem;
-            border-radius: 40px;
-            border: 2px solid #d8c0ab;
-            font-size: 0.85rem;
-            transition: all 0.2s ease;
-            background: white;
-        }
-        .manual-date-options label.selected { border-color: #4d3422; background: rgba(77, 52, 34, 0.08); }
-        .manual-date-options label:hover { border-color: #a8846a; }
-        .manual-date-options label input[type="radio"] { margin: 0; }
-
         .email-options-modal {
             display: none;
             position: fixed;
@@ -865,7 +841,6 @@
             .modal .modal-buttons { flex-direction: column; }
             .modal .modal-buttons button { width: 100%; }
             .custom-date-row input[type="date"] { width: 100%; margin-bottom: 0; }
-            .manual-date-options label { font-size: 0.75rem; padding: 0.3rem 0.7rem; }
         }
         @media (max-width: 600px) {
             input, select, textarea, button { font-size: 16px; }
@@ -1033,7 +1008,7 @@
     </div>
 </div>
 
-<!-- Manual Add Modal -->
+<!-- Manual Add Modal — uses a DROPDOWN for date selection -->
 <div class="modal-overlay" id="manualAddModal">
     <div class="modal" style="max-width:520px;">
         <h3>✍️ Add History Entry Manually</h3>
@@ -1042,15 +1017,15 @@
         <input type="text" id="manualCategory" placeholder="📂 Category (optional)" maxlength="60" autocomplete="off">
 
         <div style="text-align:left; margin-bottom:0.4rem; font-size:0.85rem; color:#7a5f47; font-weight:500; padding-left:0.5rem;">📅 Date:</div>
-        <div class="manual-date-options" id="manualDateOptions">
-            <label class="selected" id="manualTodayLabel"><input type="radio" name="manualDate" value="today" checked> 📅 Today</label>
-            <label id="manualTomorrowLabel"><input type="radio" name="manualDate" value="tomorrow"> 📅 Tomorrow</label>
-            <label id="manualYesterdayLabel"><input type="radio" name="manualDate" value="yesterday"> 📅 Yesterday</label>
-            <label id="manualCustomLabel"><input type="radio" name="manualDate" value="custom"> 📅 Custom</label>
-            <label id="manualNoneLabel"><input type="radio" name="manualDate" value="none"> 🚫 None</label>
-        </div>
+        <select id="manualDateSelect">
+            <option value="today" selected>📅 Today</option>
+            <option value="tomorrow">📅 Tomorrow</option>
+            <option value="yesterday">📅 Yesterday</option>
+            <option value="custom">📅 Custom...</option>
+            <option value="none">🚫 No date tag</option>
+        </select>
 
-        <!-- Custom date picker for manual add -->
+        <!-- Custom date picker for manual add (shown when "Custom..." selected) -->
         <div class="custom-date-row" id="manualCustomDateRow">
             <label for="manualCustomDateInput">🗓️ Pick a date:</label>
             <input type="date" id="manualCustomDateInput">
@@ -1169,6 +1144,7 @@
     const manualAddConfirm = document.getElementById('manualAddConfirm');
     const manualAddCancel = document.getElementById('manualAddCancel');
     const manualAddError = document.getElementById('manualAddError');
+    const manualDateSelect = document.getElementById('manualDateSelect');
     const manualCustomDateRow = document.getElementById('manualCustomDateRow');
     const manualCustomDateInput = document.getElementById('manualCustomDateInput');
     const manualCustomDatePreview = document.getElementById('manualCustomDatePreview');
@@ -1551,19 +1527,15 @@
     }
 
     // ============================================================
-    // MANUAL ADD — with Today / Tomorrow / Yesterday / Custom / None
+    // MANUAL ADD — now uses a DROPDOWN for date selection
     // ============================================================
     function openManualAddModal() {
         manualDishName.value = '';
         manualCategory.value = '';
         manualCook.value = '';
         manualAddError.classList.remove('show');
-        // Reset date option to Today
-        const todayRadio = document.querySelector('input[name="manualDate"][value="today"]');
-        if (todayRadio) todayRadio.checked = true;
-        document.querySelectorAll('#manualDateOptions label').forEach(l => l.classList.remove('selected'));
-        const mtl = document.getElementById('manualTodayLabel');
-        if (mtl) mtl.classList.add('selected');
+        // Reset dropdown to Today
+        if (manualDateSelect) manualDateSelect.value = 'today';
         // Hide custom row & clear
         if (manualCustomDateRow) manualCustomDateRow.classList.remove('visible');
         if (manualCustomDateInput) manualCustomDateInput.value = '';
@@ -1589,9 +1561,8 @@
         const category = (manualCategory.value || '').trim() || 'Uncategorized';
         const cook = manualCook.value;
 
-        // Determine selected date option
-        let dateOpt = 'today';
-        document.querySelectorAll('input[name="manualDate"]').forEach(r => { if (r.checked) dateOpt = r.value; });
+        // Read from dropdown
+        const dateOpt = manualDateSelect ? manualDateSelect.value : 'today';
 
         // Validate custom
         if (dateOpt === 'custom') {
@@ -1635,34 +1606,28 @@
         await pushAllToCloud();
     }
 
-    // Setup manual date radio listeners
-    function setupManualDateOptions() {
-        document.querySelectorAll('#manualDateOptions label').forEach(label => {
-            label.addEventListener('click', function() {
-                const radio = this.querySelector('input[type="radio"]');
-                if (radio) {
-                    radio.checked = true;
-                    document.querySelectorAll('#manualDateOptions label').forEach(l => l.classList.remove('selected'));
-                    this.classList.add('selected');
-                    if (radio.value === 'custom') {
-                        if (manualCustomDateRow) manualCustomDateRow.classList.add('visible');
-                        if (manualCustomDateInput) {
-                            if (!manualCustomDateInput.value) {
-                                const today = new Date();
-                                const yyyy = today.getFullYear();
-                                const mm = String(today.getMonth() + 1).padStart(2, '0');
-                                const dd = String(today.getDate()).padStart(2, '0');
-                                manualCustomDateInput.value = `${yyyy}-${mm}-${dd}`;
-                                updateManualCustomDatePreview();
-                            }
-                            setTimeout(() => manualCustomDateInput.focus(), 100);
-                        }
-                    } else {
-                        if (manualCustomDateRow) manualCustomDateRow.classList.remove('visible');
+    // Dropdown change listener → show/hide custom date row
+    function setupManualDateDropdown() {
+        if (!manualDateSelect) return;
+        manualDateSelect.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                if (manualCustomDateRow) manualCustomDateRow.classList.add('visible');
+                if (manualCustomDateInput) {
+                    if (!manualCustomDateInput.value) {
+                        const today = new Date();
+                        const yyyy = today.getFullYear();
+                        const mm = String(today.getMonth() + 1).padStart(2, '0');
+                        const dd = String(today.getDate()).padStart(2, '0');
+                        manualCustomDateInput.value = `${yyyy}-${mm}-${dd}`;
+                        updateManualCustomDatePreview();
                     }
+                    setTimeout(() => manualCustomDateInput.focus(), 100);
                 }
-            });
+            } else {
+                if (manualCustomDateRow) manualCustomDateRow.classList.remove('visible');
+            }
         });
+
         if (manualCustomDateInput) {
             manualCustomDateInput.addEventListener('change', updateManualCustomDatePreview);
             manualCustomDateInput.addEventListener('input', updateManualCustomDatePreview);
@@ -2437,7 +2402,7 @@
         updateUI();
         updatePopup(null, null, null);
         setupDateOptions();
-        setupManualDateOptions();
+        setupManualDateDropdown();
 
         if (supabaseClient) {
             setSyncStatus('syncing', '🔄 connecting...');
