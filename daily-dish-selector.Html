@@ -1,0 +1,2587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍽️ Dish Picker · Cloud Synced</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: linear-gradient(145deg, #fcf6f0 0%, #f2e8de 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            padding: 1.5rem;
+            margin: 0;
+        }
+
+        .card {
+            max-width: 950px;
+            width: 100%;
+            background: rgba(255, 248, 242, 0.92);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border-radius: 56px;
+            padding: 2.5rem 2rem 2.8rem;
+            box-shadow: 0 20px 40px rgba(60, 40, 20, 0.12),
+                        0 8px 20px rgba(0, 0, 0, 0.05),
+                        inset 0 1px 2px rgba(255, 235, 210, 0.6);
+            text-align: center;
+            border: 1px solid rgba(255, 225, 200, 0.6);
+        }
+
+        h2 {
+            font-weight: 500;
+            font-size: 2.1rem;
+            letter-spacing: -0.02em;
+            color: #3d2a1b;
+            margin-bottom: 0.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .sub {
+            color: #7a5f47;
+            font-weight: 400;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.8;
+            border-bottom: 1px dashed rgba(160, 120, 90, 0.25);
+            padding-bottom: 0.75rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            background: #4d3422;
+            color: #fef3e6;
+            padding: 0.3rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            font-weight: 400;
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.03em;
+        }
+
+        .sync-badge {
+            display: inline-block;
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+            background: #95a5a6;
+            color: white;
+        }
+        .sync-badge.online { background: #27ae60; }
+        .sync-badge.syncing { background: #f39c12; }
+        .sync-badge.offline { background: #c0392b; }
+
+        .delete-mode-indicator {
+            display: inline-block;
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        .delete-mode-indicator.active { background: #c0392b; color: white; }
+        .delete-mode-indicator.inactive { background: #95a5a6; color: white; }
+
+        .category-section, .add-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+            padding: 0.8rem;
+            background: rgba(245, 235, 220, 0.3);
+            border-radius: 60px;
+            border: 1px solid rgba(210, 180, 155, 0.3);
+        }
+        .category-section label { font-weight: 500; color: #3d2a1b; font-size: 0.95rem; }
+
+        .category-select {
+            padding: 0.6rem 1.2rem;
+            border-radius: 60px;
+            border: 1px solid #d8c0ab;
+            background: rgba(255, 250, 245, 0.7);
+            font-size: 1rem;
+            color: #3d2a1b;
+            outline: none;
+            cursor: pointer;
+            min-width: 200px;
+            max-width: 300px;
+            font-family: inherit;
+        }
+        .category-select:focus {
+            border-color: #a8846a;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(160, 120, 90, 0.1);
+        }
+
+        .category-count {
+            font-size: 0.8rem;
+            color: #7a5f47;
+            background: rgba(200, 170, 145, 0.15);
+            padding: 0.2rem 0.8rem;
+            border-radius: 40px;
+            white-space: nowrap;
+        }
+
+        .add-section input {
+            flex: 1;
+            min-width: 180px;
+            padding: 0.7rem 1.2rem;
+            border-radius: 60px;
+            border: 1px solid #d8c0ab;
+            background: rgba(255, 250, 245, 0.7);
+            font-size: 1rem;
+            color: #3d2a1b;
+            outline: none;
+            font-family: inherit;
+        }
+        .add-section input:focus {
+            border-color: #a8846a;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(160, 120, 90, 0.1);
+        }
+        .add-section input::placeholder { color: #b09880; font-style: italic; }
+
+        .btn-add {
+            background: #6a4c34;
+            color: #fef3e6;
+            border: none;
+            padding: 0.7rem 1.6rem;
+            border-radius: 60px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            white-space: nowrap;
+            font-family: inherit;
+        }
+        .btn-add:hover { background: #4d3422; transform: scale(1.02); }
+
+        .bulk-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .bulk-section label {
+            background: rgba(245, 235, 220, 0.5);
+            padding: 0.5rem 1.2rem;
+            border-radius: 60px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #3d2a1b;
+            cursor: pointer;
+            border: 1px dashed #a8846a;
+        }
+        .bulk-section label:hover { background: rgba(245, 235, 220, 0.8); border-color: #6a4c34; }
+        .bulk-section input[type="file"] { display: none; }
+
+        .bulk-btn {
+            background: #7a5f47;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.4rem;
+            border-radius: 60px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .bulk-btn:hover { background: #4d3422; transform: scale(1.02); }
+        .bulk-btn.export-excel-btn { background: #1a6e3b; }
+
+        .bulk-hint {
+            font-size: 0.75rem;
+            color: #7a5f47;
+            opacity: 0.7;
+            width: 100%;
+            text-align: center;
+        }
+
+        .list-container {
+            background: rgba(245, 235, 220, 0.4);
+            border-radius: 40px;
+            padding: 1.5rem 1rem 1rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 235, 215, 0.7);
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 0.5rem 0.8rem 0.5rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .list-header .select-all-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: #3d2a1b;
+        }
+        .list-header .select-all-container input[type="checkbox"] {
+            width: 18px; height: 18px; cursor: pointer; accent-color: #4d3422;
+        }
+        .list-header .bulk-delete-btn {
+            background: #c0392b;
+            color: white;
+            border: none;
+            padding: 0.4rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: inherit;
+        }
+        .list-header .bulk-delete-btn.visible { display: inline-flex; }
+
+        .item-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 0.6rem 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+        .item-grid::-webkit-scrollbar { width: 6px; }
+        .item-grid::-webkit-scrollbar-track { background: rgba(200, 180, 160, 0.2); border-radius: 10px; }
+        .item-grid::-webkit-scrollbar-thumb { background: #a8846a; border-radius: 10px; }
+
+        .item-badge {
+            background: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 100px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #3d2a1b;
+            box-shadow: 0 4px 8px rgba(60, 40, 20, 0.04);
+            border: 1px solid rgba(210, 180, 155, 0.4);
+            background: rgba(255, 250, 245, 0.8);
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .item-badge .category-tag {
+            font-size: 0.65rem;
+            background: #e8ddd0;
+            padding: 0.1rem 0.6rem;
+            border-radius: 40px;
+            color: #5a4a3a;
+            max-width: 120px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .item-badge.consumed {
+            opacity: 0.3;
+            text-decoration: line-through;
+            background: #e8ddd0;
+            border-color: #c9b8a6;
+            filter: grayscale(0.5);
+            pointer-events: none;
+        }
+        .item-badge .select-checkbox {
+            display: none;
+            width: 16px; height: 16px; cursor: pointer; accent-color: #c0392b;
+        }
+        .item-badge.delete-mode-active .select-checkbox { display: inline-block; }
+        .item-badge.selected-for-delete {
+            background: #fce4e4;
+            border-color: #c0392b;
+            box-shadow: 0 0 0 2px #c0392b;
+        }
+        .item-badge:hover:not(.consumed) {
+            background: white;
+            border-color: #c99f7a;
+            transform: scale(1.02);
+        }
+
+        .delete-btn {
+            background: #c0392b;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 22px; height: 22px;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-family: inherit;
+        }
+        .delete-btn:hover { background: #e74c3c; }
+
+        .popup-area {
+            background: #f5e8db;
+            border-radius: 80px;
+            padding: 1.2rem 1.5rem;
+            margin: 1.5rem 0 1.8rem;
+            border: 1px solid rgba(255, 235, 215, 0.7);
+        }
+        .popup-display {
+            font-size: 3.2rem;
+            font-weight: 600;
+            color: #2d1b0e;
+            background: rgba(255, 248, 240, 0.6);
+            padding: 1.2rem 1.5rem;
+            border-radius: 60px;
+            min-height: 7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            border: 1px solid rgba(255, 240, 225, 0.6);
+            word-break: break-word;
+        }
+        .popup-display .popup-icon { font-size: 3.5rem; line-height: 1; }
+        .popup-display .popup-text { color: #2d1b0e; font-weight: 600; font-size: inherit; }
+        .popup-display .popup-tag {
+            background: #6a4c34;
+            color: #fef3e6;
+            padding: 0.2rem 1.2rem;
+            border-radius: 60px;
+            font-size: 1.1rem;
+            white-space: nowrap;
+        }
+        .popup-display .popup-category {
+            background: #2d6a4f;
+            color: white;
+            padding: 0.2rem 1.2rem;
+            border-radius: 60px;
+            font-size: 0.85rem;
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .popup-display .popup-date {
+            background: #8e44ad;
+            color: white;
+            padding: 0.2rem 1.2rem;
+            border-radius: 60px;
+            font-size: 0.85rem;
+        }
+        .popup-display .popup-empty {
+            font-size: 1.8rem;
+            font-weight: 400;
+            opacity: 0.7;
+            color: #7a5f47;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .btn {
+            border: none;
+            padding: 0.9rem 2.5rem;
+            border-radius: 80px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #3d2a1b;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            box-shadow: 0 6px 14px rgba(60, 40, 20, 0.06);
+            border: 1px solid rgba(255, 240, 225, 0.6);
+            transition: all 0.25s ease;
+            background: rgba(255, 250, 245, 0.9);
+            letter-spacing: 0.02em;
+            font-family: inherit;
+        }
+        .btn-primary { background: #4d3422; color: #fef3e6; box-shadow: 0 8px 18px rgba(60, 40, 20, 0.25); }
+        .btn-primary:hover:not(:disabled) { background: #342217; transform: scale(1.02); }
+        .btn-outline { background: rgba(255, 248, 240, 0.3); border: 1px solid #d8c0ab; }
+        .btn-outline:hover { background: rgba(255, 248, 240, 0.7); border-color: #b09078; transform: scale(1.02); }
+        .btn-email { background: #2d6a4f; color: #fef3e6; }
+        .btn-email:hover { background: #1d4d38; transform: scale(1.02); }
+        .btn-danger { background: #c0392b; color: #fef3e6; }
+        .btn-danger:hover { background: #e74c3c; transform: scale(1.02); }
+        .btn-clear { background: #8e44ad; color: #fef3e6; }
+        .btn-clear:hover { background: #6c3483; transform: scale(1.02); }
+        .btn-sync { background: #3498db; color: #fef3e6; }
+        .btn-sync:hover { background: #2980b9; transform: scale(1.02); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn i { font-style: normal; font-size: 1.3rem; line-height: 1; }
+
+        .history-section {
+            margin-top: 1.8rem;
+            background: rgba(245, 235, 220, 0.3);
+            border-radius: 40px;
+            padding: 1.2rem 1.5rem;
+            border: 1px solid rgba(210, 180, 155, 0.3);
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .history-section h3 {
+            font-size: 1.1rem;
+            color: #4d3422;
+            font-weight: 500;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .history-list { display: flex; flex-direction: column; gap: 0.4rem; text-align: left; }
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0.8rem;
+            background: rgba(255, 250, 245, 0.6);
+            border-radius: 12px;
+            border-left: 4px solid #a8846a;
+            font-size: 0.95rem;
+            color: #3d2a1b;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .history-item .dish-name { font-weight: 500; flex: 1; min-width: 150px; }
+        .history-item .dish-category {
+            font-size: 0.7rem;
+            background: #2d6a4f;
+            color: white;
+            padding: 0.1rem 0.7rem;
+            border-radius: 40px;
+            white-space: nowrap;
+        }
+        .history-item .dish-date { color: #7a5f47; font-size: 0.85rem; opacity: 0.8; }
+        .history-item .dish-date-tag {
+            font-size: 0.7rem;
+            background: #8e44ad;
+            color: white;
+            padding: 0.1rem 0.7rem;
+            border-radius: 40px;
+            white-space: nowrap;
+        }
+        .history-item .cook-tags { display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; }
+        .cook-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.15rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 2px solid transparent;
+            background: #e8e0d8;
+            color: #5a4a3a;
+        }
+        .cook-tag:hover { transform: scale(1.05); }
+        .cook-tag.active-deep { background: #2c3e50; color: white; }
+        .cook-tag.active-honey { background: #d4a373; color: white; }
+        .cook-tag.inactive { opacity: 0.5; }
+
+        .history-delete-btn {
+            background: #c0392b;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px; height: 24px;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.6;
+            font-weight: bold;
+            font-family: inherit;
+        }
+        .history-delete-btn:hover { opacity: 1; background: #e74c3c; }
+
+        .history-empty { color: #b09880; font-style: italic; padding: 0.5rem; text-align: center; }
+
+        .footer-meta {
+            margin-top: 1.8rem;
+            color: #7a5f47;
+            font-size: 0.85rem;
+            opacity: 0.7;
+            border-top: 1px solid rgba(160, 120, 90, 0.15);
+            padding-top: 1.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+        }
+        .footer-meta span {
+            background: rgba(60, 40, 20, 0.03);
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+        }
+
+        .reset-notice {
+            font-size: 0.9rem;
+            color: #7a5f47;
+            background: rgba(200, 170, 145, 0.15);
+            padding: 0.3rem 1.2rem;
+            border-radius: 60px;
+            display: inline-block;
+            margin-top: 0.6rem;
+        }
+
+        .toast-message {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4d3422;
+            color: #fef3e6;
+            padding: 0.8rem 2rem;
+            border-radius: 60px;
+            font-size: 1rem;
+            font-weight: 500;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast-message.show { opacity: 1; }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: white;
+            border-radius: 40px;
+            padding: 2rem;
+            max-width: 420px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        .modal h3 { color: #3d2a1b; margin-bottom: 0.5rem; font-size: 1.4rem; }
+        .modal p { color: #7a5f47; margin-bottom: 1.5rem; font-size: 0.95rem; }
+        .modal input, .modal select {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            border-radius: 60px;
+            border: 2px solid #d8c0ab;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            outline: none;
+            font-family: inherit;
+            background: white;
+        }
+        .modal input:focus, .modal select:focus { border-color: #a8846a; }
+        .modal .modal-buttons { display: flex; gap: 0.8rem; justify-content: center; }
+        .modal .modal-buttons button {
+            padding: 0.7rem 2rem;
+            border-radius: 60px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .modal .modal-buttons .modal-confirm { background: #c0392b; color: white; }
+        .modal .modal-buttons .modal-confirm:hover { background: #e74c3c; }
+        .modal .modal-buttons .modal-cancel { background: #e0d6cc; color: #3d2a1b; }
+        .modal .modal-buttons .modal-cancel:hover { background: #d0c4b8; }
+
+        .modal .error-text {
+            color: #c0392b;
+            font-size: 0.9rem;
+            margin-top: -0.5rem;
+            margin-bottom: 0.8rem;
+            display: none;
+        }
+        .modal .error-text.show { display: block; }
+
+        .modal .date-option {
+            display: flex;
+            gap: 0.8rem;
+            justify-content: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .modal .date-option label {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+            padding: 0.4rem 1rem;
+            border-radius: 40px;
+            border: 2px solid #d8c0ab;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+        .modal .date-option label.selected { border-color: #4d3422; background: rgba(77, 52, 34, 0.08); }
+        .modal .date-option label:hover { border-color: #a8846a; }
+
+        /* Custom date picker row */
+        .custom-date-row {
+            display: none;
+            align-items: center;
+            gap: 0.8rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+            padding: 0.8rem 1rem;
+            background: #f8f5f0;
+            border-radius: 20px;
+            border: 1px dashed #a8846a;
+        }
+        .custom-date-row.visible { display: flex; }
+        .custom-date-row label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #4d3422;
+            white-space: nowrap;
+        }
+        .custom-date-row input[type="date"] {
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            border: 2px solid #d8c0ab;
+            font-size: 0.95rem;
+            font-family: inherit;
+            color: #3d2a1b;
+            background: white;
+            outline: none;
+            cursor: pointer;
+            margin-bottom: 0;
+            width: auto;
+        }
+        .custom-date-row input[type="date"]:focus { border-color: #a8846a; }
+        .custom-date-row .custom-date-preview {
+            font-size: 0.8rem;
+            color: #2d6a4f;
+            background: #e8f5e9;
+            padding: 0.2rem 0.8rem;
+            border-radius: 40px;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        .modal .bulk-delete-count { font-size: 2rem; font-weight: bold; color: #c0392b; margin: 0.5rem 0; }
+        .modal .history-delete-dish {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #4d3422;
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background: #f5f0eb;
+            border-radius: 12px;
+        }
+
+        /* Manual Add date options */
+        .manual-date-options {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 0.8rem;
+        }
+        .manual-date-options label {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            cursor: pointer;
+            padding: 0.35rem 0.9rem;
+            border-radius: 40px;
+            border: 2px solid #d8c0ab;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        .manual-date-options label.selected { border-color: #4d3422; background: rgba(77, 52, 34, 0.08); }
+        .manual-date-options label:hover { border-color: #a8846a; }
+        .manual-date-options label input[type="radio"] { margin: 0; }
+
+        .email-options-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        .email-options-modal.active { display: flex; }
+        .email-options-content {
+            background: white;
+            border-radius: 24px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem;
+            position: relative;
+        }
+        .email-options-content .close-btn {
+            position: sticky;
+            top: 0;
+            float: right;
+            background: #c0392b;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 36px; height: 36px;
+            font-size: 20px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .email-options-content h3 { color: #4d3422; font-size: 1.6rem; margin-bottom: 0.5rem; text-align: center; }
+        .email-options-content .subtitle { color: #7a5f47; text-align: center; margin-bottom: 1.5rem; }
+
+        .email-option-card {
+            background: #f8f5f0;
+            border-radius: 16px;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #e8ddd0;
+        }
+        .email-option-card .header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.3rem; }
+        .email-option-card .header .icon { font-size: 1.8rem; }
+        .email-option-card .header .title { font-size: 1.1rem; font-weight: 600; color: #3d2a1b; }
+        .email-option-card .header .badge {
+            background: #2d6a4f;
+            color: white;
+            padding: 0.15rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            margin-left: auto;
+        }
+        .email-option-card .description { color: #7a5f47; font-size: 0.9rem; padding-left: 2.6rem; }
+        .email-option-card .action-btn {
+            margin-top: 0.5rem;
+            margin-left: 2.6rem;
+            padding: 0.4rem 1.2rem;
+            border-radius: 60px;
+            border: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: #4d3422;
+            color: white;
+            font-family: inherit;
+        }
+        .email-option-card .action-btn.html-btn { background: #2d6a4f; }
+        .email-option-card .action-btn.plain-btn { background: #7a5f47; }
+
+        .email-subject-box {
+            background: #f5f0eb;
+            padding: 12px 15px;
+            border-radius: 12px;
+            margin: 10px 0 15px 0;
+            border-left: 4px solid #4d3422;
+        }
+        .email-subject-box code {
+            background: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        html, body { max-width: 100%; overflow-x: hidden; }
+
+        @media (max-width: 600px) {
+            body { padding: 0.5rem; align-items: flex-start; }
+            .card { padding: 1.2rem 0.85rem 1.4rem; border-radius: 28px; }
+            h2 { font-size: 1.25rem; }
+            .sub { font-size: 0.78rem; }
+            .status-badge { font-size: 0.75rem; padding: 0.25rem 0.9rem; }
+            .category-section, .add-section {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+                padding: 0.7rem;
+                border-radius: 22px;
+            }
+            .category-select, .add-section input {
+                min-width: 0;
+                max-width: 100%;
+                width: 100%;
+                font-size: 16px;
+            }
+            .btn-add { width: 100%; justify-content: center; }
+            .bulk-section label, .bulk-btn {
+                font-size: 0.75rem;
+                padding: 0.4rem 0.85rem;
+                flex: 1 1 auto;
+                justify-content: center;
+                display: inline-flex;
+            }
+            .popup-display { font-size: 1.6rem; min-height: 4.5rem; padding: 0.8rem; }
+            .popup-display .popup-icon { font-size: 1.9rem; }
+            .btn-group { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+            .btn { width: 100%; justify-content: center; padding: 0.7rem 1rem; font-size: 0.9rem; }
+            .history-section { padding: 0.8rem; max-height: 320px; }
+            .history-item { flex-direction: column; align-items: stretch; gap: 0.35rem; }
+            .footer-meta { flex-direction: column; align-items: center; }
+            .toast-message { bottom: 1rem; left: 1rem; right: 1rem; transform: none; font-size: 0.85rem; }
+            .modal { padding: 1.4rem 1.1rem; width: 92%; }
+            .modal .modal-buttons { flex-direction: column; }
+            .modal .modal-buttons button { width: 100%; }
+            .custom-date-row input[type="date"] { width: 100%; margin-bottom: 0; }
+            .manual-date-options label { font-size: 0.75rem; padding: 0.3rem 0.7rem; }
+        }
+        @media (max-width: 600px) {
+            input, select, textarea, button { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card" role="main">
+    <h2><span>🍽️</span> today's dish</h2>
+    <div class="sub">cloud synced · all data saved · click refresh to pick</div>
+
+    <div class="status-badge" id="statusBadge">
+        🔁 0 / 0 picked
+        <span class="sync-badge" id="syncBadge">🔄 connecting...</span>
+        <span class="delete-mode-indicator inactive" id="deleteIndicator">🔒 locked</span>
+    </div>
+
+    <div class="category-section">
+        <label for="categorySelect">📂 Category:</label>
+        <select class="category-select" id="categorySelect">
+            <option value="__all__">📋 All Categories</option>
+        </select>
+        <span class="category-count" id="categoryCount">0 dishes</span>
+    </div>
+
+    <div class="add-section">
+        <input type="text" id="newDishInput" placeholder="e.g. 🧅🍅 Sev Tamatar Nu Shak" maxlength="80">
+        <input type="text" id="newCategoryInput" placeholder="Category (e.g. Roti + Chaas)" maxlength="60">
+        <button class="btn-add" id="addDishBtn">➕ add dish</button>
+    </div>
+
+    <div class="bulk-section">
+        <label for="bulkFileInput">📂 Import Excel/CSV</label>
+        <input type="file" id="bulkFileInput" accept=".csv,.xlsx,.xls">
+        <button class="bulk-btn export-excel-btn" id="exportExcelBtn">📤 Export CSV</button>
+        <span class="bulk-hint">Format: "Dish Name, Category" · saved to cloud automatically</span>
+    </div>
+
+    <div class="list-container">
+        <div class="list-header" id="listHeader">
+            <div class="select-all-container" id="selectAllContainer" style="display:none;">
+                <input type="checkbox" id="selectAllCheckbox">
+                <label for="selectAllCheckbox">Select All</label>
+                <span id="selectedCount" style="font-size:0.8rem; color:#7a5f47;">(0 selected)</span>
+            </div>
+            <button class="bulk-delete-btn" id="bulkDeleteBtn">🗑️ Delete Selected</button>
+        </div>
+        <div class="item-grid" id="itemList"></div>
+    </div>
+
+    <div class="popup-area">
+        <div class="popup-display" id="popupDisplay">
+            <span class="popup-empty">✨ click refresh to pick a dish</span>
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-primary" id="refreshBtn"><i>⟳</i> refresh</button>
+        <button class="btn btn-outline" id="resetBtn"><i>↺</i> reset all</button>
+        <button class="btn btn-clear" id="clearHistoryBtn"><i>🗑️</i> clear history</button>
+        <button class="btn btn-email" id="emailBtn"><i>✉</i> email</button>
+        <button class="btn btn-danger" id="deleteModeBtn"><i>🔒</i> delete mode</button>
+        <button class="btn btn-outline" id="manualAddBtn"><i>✍️</i> add manually</button>
+        <button class="btn btn-sync" id="syncBtn"><i>🔄</i> force sync</button>
+    </div>
+
+    <div class="reset-notice" id="resetNotice">add some dishes to get started!</div>
+
+    <div class="history-section">
+        <h3>📜 cooking history <span style="font-size:0.8rem; color:#7a5f47;">(click tags · 🗑️ to delete)</span></h3>
+        <div class="history-list" id="historyList">
+            <div class="history-empty">no dishes made yet</div>
+        </div>
+    </div>
+
+    <div class="footer-meta">
+        <span id="remainingCount">📋 0 remaining</span>
+        <span id="historyCount">📚 0 total made</span>
+        <span id="lastSyncInfo">🔄 never synced</span>
+    </div>
+</div>
+
+<!-- Category Selection Modal -->
+<div class="modal-overlay" id="categoryModal">
+    <div class="modal" style="max-width:520px;">
+        <h3>📂 Select Category & Date</h3>
+        <p>Choose a category and when you want to make this dish</p>
+        <select id="categoryModalSelect"><option value="__all__">📋 All Categories</option></select>
+        <div style="font-size:0.85rem; color:#7a5f47; margin-bottom:0.8rem;" id="categoryModalCount"></div>
+
+        <div class="date-option" id="dateOptionGroup">
+            <label class="selected" id="todayLabel"><input type="radio" name="dishDate" value="today" checked> 📅 Today</label>
+            <label id="tomorrowLabel"><input type="radio" name="dishDate" value="tomorrow"> 📅 Tomorrow</label>
+            <label id="yesterdayLabel"><input type="radio" name="dishDate" value="yesterday"> 📅 Yesterday</label>
+            <label id="customLabel"><input type="radio" name="dishDate" value="custom"> 📅 Custom</label>
+        </div>
+
+        <!-- Custom date picker (shown when Custom is selected) -->
+        <div class="custom-date-row" id="customDateRow">
+            <label for="customDateInput">🗓️ Pick a date:</label>
+            <input type="date" id="customDateInput">
+            <span class="custom-date-preview" id="customDatePreview"></span>
+        </div>
+
+        <div class="modal-buttons">
+            <button class="modal-cancel" id="categoryModalCancel">Cancel</button>
+            <button class="modal-confirm" id="categoryModalConfirm">🎲 Pick Dish</button>
+        </div>
+    </div>
+</div>
+
+<!-- History Delete Modal -->
+<div class="modal-overlay" id="historyDeleteModal">
+    <div class="modal">
+        <h3>🔒 Delete History Entry</h3>
+        <p>Enter the password to delete this history entry</p>
+        <div class="history-delete-dish" id="historyDeleteDish"></div>
+        <input type="password" id="historyDeletePassword" placeholder="Enter password" autocomplete="off">
+        <div class="error-text" id="historyDeleteError">❌ Incorrect password</div>
+        <div class="modal-buttons">
+            <button class="modal-cancel" id="historyDeleteCancel">Cancel</button>
+            <button class="modal-confirm" id="historyDeleteConfirm">🗑️ Delete Entry</button>
+        </div>
+    </div>
+</div>
+
+<!-- Password Modal -->
+<div class="modal-overlay" id="passwordModal">
+    <div class="modal">
+        <h3>🔒 Delete Dishes</h3>
+        <p>Enter the password to enable dish deletion</p>
+        <input type="password" id="passwordInput" placeholder="Enter password" autocomplete="off">
+        <div class="error-text" id="passwordError">❌ Incorrect password</div>
+        <div class="modal-buttons">
+            <button class="modal-cancel" id="modalCancel">Cancel</button>
+            <button class="modal-confirm" id="modalConfirm">Unlock</button>
+        </div>
+    </div>
+</div>
+
+<!-- Clear History Modal -->
+<div class="modal-overlay" id="clearHistoryModal">
+    <div class="modal">
+        <h3>🗑️ Clear All History</h3>
+        <p>This will delete all cooking history and reset all dishes to available.<br><strong>Also cleared from the cloud!</strong></p>
+        <div class="modal-buttons">
+            <button class="modal-cancel" id="clearHistoryCancel">Cancel</button>
+            <button class="modal-confirm" id="clearHistoryConfirm">Yes, Clear All</button>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Delete Modal -->
+<div class="modal-overlay" id="bulkDeleteModal">
+    <div class="modal">
+        <h3>🗑️ Bulk Delete Dishes</h3>
+        <p>Are you sure you want to delete the following dishes?</p>
+        <div class="bulk-delete-count" id="bulkDeleteCount">0</div>
+        <p style="font-size:0.85rem; color:#7a5f47;" id="bulkDeleteList"></p>
+        <div class="modal-buttons">
+            <button class="modal-cancel" id="bulkDeleteCancel">Cancel</button>
+            <button class="modal-confirm" id="bulkDeleteConfirm">🗑️ Delete All</button>
+        </div>
+    </div>
+</div>
+
+<!-- Manual Add Modal -->
+<div class="modal-overlay" id="manualAddModal">
+    <div class="modal" style="max-width:520px;">
+        <h3>✍️ Add History Entry Manually</h3>
+        <p>Fill in the details below to add an entry directly to your history</p>
+        <input type="text" id="manualDishName" placeholder="🍽️ Dish name (required)" maxlength="80" autocomplete="off">
+        <input type="text" id="manualCategory" placeholder="📂 Category (optional)" maxlength="60" autocomplete="off">
+
+        <div style="text-align:left; margin-bottom:0.4rem; font-size:0.85rem; color:#7a5f47; font-weight:500; padding-left:0.5rem;">📅 Date:</div>
+        <div class="manual-date-options" id="manualDateOptions">
+            <label class="selected" id="manualTodayLabel"><input type="radio" name="manualDate" value="today" checked> 📅 Today</label>
+            <label id="manualTomorrowLabel"><input type="radio" name="manualDate" value="tomorrow"> 📅 Tomorrow</label>
+            <label id="manualYesterdayLabel"><input type="radio" name="manualDate" value="yesterday"> 📅 Yesterday</label>
+            <label id="manualCustomLabel"><input type="radio" name="manualDate" value="custom"> 📅 Custom</label>
+            <label id="manualNoneLabel"><input type="radio" name="manualDate" value="none"> 🚫 None</label>
+        </div>
+
+        <!-- Custom date picker for manual add -->
+        <div class="custom-date-row" id="manualCustomDateRow">
+            <label for="manualCustomDateInput">🗓️ Pick a date:</label>
+            <input type="date" id="manualCustomDateInput">
+            <span class="custom-date-preview" id="manualCustomDatePreview"></span>
+        </div>
+
+        <select id="manualCook" style="margin-top:0.3rem;">
+            <option value="">— Cook not assigned —</option>
+            <option value="deep">👨‍🍳 Deep</option>
+            <option value="honey">👩‍🍳 Honey</option>
+            <option value="both">👨‍🍳👩‍🍳 Both</option>
+        </select>
+        <div class="error-text" id="manualAddError">❌ Please enter a dish name</div>
+        <div class="modal-buttons">
+            <button class="modal-cancel" id="manualAddCancel" type="button">Cancel</button>
+            <button class="modal-confirm" id="manualAddConfirm" type="button" style="background:#2d6a4f;">✍️ Add to History</button>
+        </div>
+    </div>
+</div>
+
+<!-- Email Options Modal -->
+<div class="email-options-modal" id="emailOptionsModal">
+    <div class="email-options-content">
+        <button class="close-btn" id="emailOptionsClose">✕</button>
+        <h3>📧 Email Options</h3>
+        <p class="subtitle">Choose how you want to send your cooking log</p>
+        <div class="email-subject-box">
+            <strong>📌 Subject:</strong> <code>🍽️ My Cooking Log - {{date}}</code>
+        </div>
+        <div class="email-option-card">
+            <div class="header"><span class="icon">🎨</span><span class="title">HTML Formatting</span><span class="badge">Best Visual</span></div>
+            <div class="description">Beautiful formatted email with colors and tables.</div>
+            <button class="action-btn html-btn" id="htmlOptionBtn">📋 Copy HTML</button>
+        </div>
+        <div class="email-option-card">
+            <div class="header"><span class="icon">📄</span><span class="title">Plain Text</span><span class="badge">Universal</span></div>
+            <div class="description">Clean plain text email.</div>
+            <button class="action-btn plain-btn" id="plainOptionBtn">📧 Open Email</button>
+        </div>
+        <div class="email-option-card">
+            <div class="header"><span class="icon">🔄</span><span class="title">Copy HTML for Outlook</span><span class="badge">Recommended</span></div>
+            <div class="description">Copies HTML for pasting into Outlook.</div>
+            <button class="action-btn html-btn" id="hybridOptionBtn">📋 Copy HTML</button>
+        </div>
+        <div class="email-option-card">
+            <div class="header"><span class="icon">📧</span><span class="title">Open Email Client</span><span class="badge">Quick</span></div>
+            <div class="description">Opens your email client with content pre-filled.</div>
+            <button class="action-btn plain-btn" id="openOptionBtn">📧 Open Email</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast-message" id="toast"></div>
+
+<!-- Supabase SDK + App Script at bottom for best compatibility -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function() {
+    "use strict";
+
+    // ============================================================
+    // SUPABASE CONFIG
+    // ============================================================
+    const SUPABASE_URL = 'https://ybjxgwvopxbpbkjsjnou.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlianhnd3ZvcHhicGJranNqbm91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1NTEyNTAsImV4cCI6MjEwNTEyNzI1MH0.3fsj27S41hQmZcp55G1-HyeLYGlo1laR4lz6UqK42D4';
+
+    let supabaseClient = null;
+    try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (e) {
+        console.error('Supabase init failed:', e);
+    }
+
+    const PASSWORD = "Deepnectar@1612@";
+    let deleteMode = false;
+
+    let ALL_DISHES = [];
+    let categories = new Set();
+    let history = [];
+    let picked = [];
+    let selectedForDelete = new Set();
+
+    // DOM
+    const itemGrid = document.getElementById('itemList');
+    const popupDisplay = document.getElementById('popupDisplay');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+    const emailBtn = document.getElementById('emailBtn');
+    const deleteModeBtn = document.getElementById('deleteModeBtn');
+    const statusBadge = document.getElementById('statusBadge');
+    const syncBadge = document.getElementById('syncBadge');
+    const remainingCount = document.getElementById('remainingCount');
+    const historyCount = document.getElementById('historyCount');
+    const lastSyncInfo = document.getElementById('lastSyncInfo');
+    const resetNotice = document.getElementById('resetNotice');
+    const newDishInput = document.getElementById('newDishInput');
+    const newCategoryInput = document.getElementById('newCategoryInput');
+    const addDishBtn = document.getElementById('addDishBtn');
+    const historyList = document.getElementById('historyList');
+    const toast = document.getElementById('toast');
+    const categorySelect = document.getElementById('categorySelect');
+    const categoryCount = document.getElementById('categoryCount');
+    const selectAllContainer = document.getElementById('selectAllContainer');
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const selectedCount = document.getElementById('selectedCount');
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    const syncBtn = document.getElementById('syncBtn');
+    const deleteIndicator = document.getElementById('deleteIndicator');
+
+    const manualAddBtn = document.getElementById('manualAddBtn');
+    const manualAddModal = document.getElementById('manualAddModal');
+    const manualDishName = document.getElementById('manualDishName');
+    const manualCategory = document.getElementById('manualCategory');
+    const manualCook = document.getElementById('manualCook');
+    const manualAddConfirm = document.getElementById('manualAddConfirm');
+    const manualAddCancel = document.getElementById('manualAddCancel');
+    const manualAddError = document.getElementById('manualAddError');
+    const manualCustomDateRow = document.getElementById('manualCustomDateRow');
+    const manualCustomDateInput = document.getElementById('manualCustomDateInput');
+    const manualCustomDatePreview = document.getElementById('manualCustomDatePreview');
+
+    const categoryModal = document.getElementById('categoryModal');
+    const categoryModalSelect = document.getElementById('categoryModalSelect');
+    const categoryModalCount = document.getElementById('categoryModalCount');
+    const categoryModalConfirm = document.getElementById('categoryModalConfirm');
+    const categoryModalCancel = document.getElementById('categoryModalCancel');
+
+    // Custom date DOM (category modal)
+    const customDateRow = document.getElementById('customDateRow');
+    const customDateInput = document.getElementById('customDateInput');
+    const customDatePreview = document.getElementById('customDatePreview');
+    const customLabel = document.getElementById('customLabel');
+
+    const historyDeleteModal = document.getElementById('historyDeleteModal');
+    const historyDeletePassword = document.getElementById('historyDeletePassword');
+    const historyDeleteError = document.getElementById('historyDeleteError');
+    const historyDeleteConfirm = document.getElementById('historyDeleteConfirm');
+    const historyDeleteCancel = document.getElementById('historyDeleteCancel');
+    const historyDeleteDish = document.getElementById('historyDeleteDish');
+
+    const modal = document.getElementById('passwordModal');
+    const passwordInput = document.getElementById('passwordInput');
+    const passwordError = document.getElementById('passwordError');
+    const modalConfirm = document.getElementById('modalConfirm');
+    const modalCancel = document.getElementById('modalCancel');
+
+    const clearHistoryModal = document.getElementById('clearHistoryModal');
+    const clearHistoryConfirm = document.getElementById('clearHistoryConfirm');
+    const clearHistoryCancel = document.getElementById('clearHistoryCancel');
+
+    const bulkDeleteModal = document.getElementById('bulkDeleteModal');
+    const bulkDeleteConfirm = document.getElementById('bulkDeleteConfirm');
+    const bulkDeleteCancel = document.getElementById('bulkDeleteCancel');
+    const bulkDeleteCount = document.getElementById('bulkDeleteCount');
+    const bulkDeleteList = document.getElementById('bulkDeleteList');
+
+    const emailOptionsModal = document.getElementById('emailOptionsModal');
+    const emailOptionsClose = document.getElementById('emailOptionsClose');
+    const htmlOptionBtn = document.getElementById('htmlOptionBtn');
+    const plainOptionBtn = document.getElementById('plainOptionBtn');
+    const hybridOptionBtn = document.getElementById('hybridOptionBtn');
+    const openOptionBtn = document.getElementById('openOptionBtn');
+
+    const bulkFileInput = document.getElementById('bulkFileInput');
+    const exportExcelBtn = document.getElementById('exportExcelBtn');
+
+    let toastTimeout = null;
+    let historyEntryToDelete = null;
+    let lastSyncTime = null;
+    let isSyncing = false;
+
+    // ============================================================
+    // SYNC BADGE
+    // ============================================================
+    function setSyncStatus(status, message) {
+        if (!syncBadge) return;
+        syncBadge.className = 'sync-badge ' + status;
+        syncBadge.textContent = message;
+    }
+
+    function updateLastSyncInfo() {
+        if (!lastSyncInfo) return;
+        if (!lastSyncTime) {
+            lastSyncInfo.textContent = '🔄 never synced';
+        } else {
+            const secs = Math.floor((Date.now() - lastSyncTime) / 1000);
+            if (secs < 5) lastSyncInfo.textContent = '✅ synced just now';
+            else if (secs < 60) lastSyncInfo.textContent = `✅ synced ${secs}s ago`;
+            else lastSyncInfo.textContent = `✅ synced ${Math.floor(secs/60)}m ago`;
+        }
+    }
+    setInterval(updateLastSyncInfo, 5000);
+
+    // ============================================================
+    // FULL CLOUD SYNC — pushes EVERYTHING
+    // ============================================================
+    async function pushAllToCloud() {
+        if (!supabaseClient) return false;
+        if (isSyncing) return false;
+        isSyncing = true;
+        setSyncStatus('syncing', '🔄 saving...');
+        try {
+            await supabaseClient.from('dish_master').delete().neq('id', 0);
+            if (ALL_DISHES.length > 0) {
+                const dishRows = ALL_DISHES.map(d => ({
+                    name: d.name,
+                    category: d.category || 'Uncategorized'
+                }));
+                const { error: dErr } = await supabaseClient.from('dish_master').insert(dishRows);
+                if (dErr) console.warn('dish_master insert warn:', dErr);
+            }
+
+            await supabaseClient.from('dish_history').delete().neq('id', 0);
+            if (history.length > 0) {
+                const histRows = history.map(h => ({
+                    dish_name: h.dish,
+                    category: h.category || 'Uncategorized',
+                    display_date: h.displayDate || '',
+                    date_tag: h.dateTag || '',
+                    cook: h.cook || ''
+                }));
+                const { error: hErr } = await supabaseClient.from('dish_history').insert(histRows);
+                if (hErr) console.warn('dish_history insert warn:', hErr);
+            }
+
+            await supabaseClient.from('dish_picked').delete().neq('id', 0);
+            if (picked.length > 0) {
+                const pickedRows = picked.map(name => ({ dish_name: name }));
+                const { error: pErr } = await supabaseClient.from('dish_picked').insert(pickedRows);
+                if (pErr) console.warn('dish_picked insert warn:', pErr);
+            }
+
+            lastSyncTime = Date.now();
+            setSyncStatus('online', '☁️ synced');
+            updateLastSyncInfo();
+            isSyncing = false;
+            return true;
+        } catch (e) {
+            console.error('pushAllToCloud failed:', e);
+            setSyncStatus('offline', '⚠️ save failed');
+            isSyncing = false;
+            return false;
+        }
+    }
+
+    async function pullAllFromCloud() {
+        if (!supabaseClient) return null;
+        try {
+            const [dishesRes, historyRes, pickedRes] = await Promise.all([
+                supabaseClient.from('dish_master').select('*').order('id', { ascending: true }),
+                supabaseClient.from('dish_history').select('*').order('id', { ascending: true }),
+                supabaseClient.from('dish_picked').select('*').order('id', { ascending: true })
+            ]);
+
+            if (dishesRes.error || historyRes.error || pickedRes.error) {
+                console.warn('pull errors:', dishesRes.error, historyRes.error, pickedRes.error);
+                return null;
+            }
+
+            const cloudDishes = (dishesRes.data || []).map(r => ({
+                name: r.name,
+                category: r.category || 'Uncategorized'
+            }));
+
+            const cloudHistory = (historyRes.data || []).map(r => ({
+                dish: r.dish_name,
+                category: r.category || 'Uncategorized',
+                displayDate: r.display_date || '',
+                dateTag: r.date_tag || '',
+                cook: r.cook || ''
+            }));
+
+            const cloudPicked = (pickedRes.data || []).map(r => r.dish_name);
+
+            return { dishes: cloudDishes, history: cloudHistory, picked: cloudPicked };
+        } catch (e) {
+            console.error('pullAllFromCloud failed:', e);
+            return null;
+        }
+    }
+
+    async function syncNow(silent) {
+        if (!supabaseClient) {
+            if (!silent) showToast('⚠️ Cloud not available.', 2500);
+            setSyncStatus('offline', '⚠️ no cloud');
+            return;
+        }
+        setSyncStatus('syncing', '🔄 syncing...');
+        const pulled = await pullAllFromCloud();
+        if (!pulled) {
+            setSyncStatus('offline', '⚠️ offline');
+            if (!silent) showToast('⚠️ Sync failed — check connection', 2500);
+            return;
+        }
+        ALL_DISHES = pulled.dishes;
+        history = pulled.history;
+        picked = pulled.picked;
+        lastSyncTime = Date.now();
+        setSyncStatus('online', '☁️ synced');
+        updateLastSyncInfo();
+        updateUI();
+        if (!silent) showToast('🔄 Synced from cloud!', 2000);
+    }
+
+    let autoSyncInterval = null;
+    function startAutoSync() {
+        if (autoSyncInterval) clearInterval(autoSyncInterval);
+        autoSyncInterval = setInterval(async () => {
+            if (isSyncing || !supabaseClient) return;
+            if (document.hidden) return;
+            const before = JSON.stringify({ h: history, d: ALL_DISHES, p: picked });
+            const pulled = await pullAllFromCloud();
+            if (pulled) {
+                const after = JSON.stringify({ h: pulled.history, d: pulled.dishes, p: pulled.picked });
+                if (before !== after) {
+                    ALL_DISHES = pulled.dishes;
+                    history = pulled.history;
+                    picked = pulled.picked;
+                    lastSyncTime = Date.now();
+                    setSyncStatus('online', '☁️ synced');
+                    updateLastSyncInfo();
+                    updateUI();
+                    showToast('🔄 Updated from other device', 2000);
+                }
+            }
+        }, 10000);
+    }
+
+    // ============================================================
+    // HELPERS
+    // ============================================================
+    function showToast(message, duration = 2500) {
+        if (!toast) return;
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => toast.classList.remove('show'), duration);
+    }
+
+    function getDateForOption(option, customDateValue) {
+        const now = new Date();
+        if (option === 'today') return now;
+        if (option === 'tomorrow') {
+            const t = new Date(now);
+            t.setDate(t.getDate() + 1);
+            return t;
+        }
+        if (option === 'yesterday') {
+            const y = new Date(now);
+            y.setDate(y.getDate() - 1);
+            return y;
+        }
+        if (option === 'custom' && customDateValue) {
+            const parts = customDateValue.split('-');
+            if (parts.length === 3) {
+                return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            }
+            return new Date(customDateValue);
+        }
+        return now;
+    }
+
+    function getFormattedDate(date) {
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function getFullDateTime(date) {
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function getCurrentDateTime() { return getFullDateTime(new Date()); }
+
+    function getSubjectLine() {
+        const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        return `🍽️ My Cooking Log - ${dateStr}`;
+    }
+
+    function getAvailableDishes() {
+        const pickedSet = new Set(picked);
+        return ALL_DISHES.filter(d => !pickedSet.has(d.name));
+    }
+
+    function getAvailableByCategory(category) {
+        const available = getAvailableDishes();
+        if (category === '__all__') return available;
+        return available.filter(d => d.category === category);
+    }
+
+    function updateDeleteIndicator() {
+        if (deleteIndicator) {
+            deleteIndicator.className = deleteMode ? 'delete-mode-indicator active' : 'delete-mode-indicator inactive';
+            deleteIndicator.textContent = deleteMode ? '🔓 unlocked' : '🔒 locked';
+        }
+        if (deleteModeBtn) {
+            deleteModeBtn.innerHTML = deleteMode ? '<i>🔓</i> delete mode (active)' : '<i>🔒</i> delete mode';
+            deleteModeBtn.style.background = deleteMode ? '#27ae60' : '#c0392b';
+        }
+        if (selectAllContainer) selectAllContainer.style.display = deleteMode ? 'flex' : 'none';
+        if (!deleteMode) selectedForDelete.clear();
+    }
+
+    function updateCategoryDropdown() {
+        categories = new Set(ALL_DISHES.map(d => d.category));
+        const currentVal = categorySelect.value;
+        categorySelect.innerHTML = '';
+        const allOpt = document.createElement('option');
+        allOpt.value = '__all__';
+        allOpt.textContent = '📋 All Categories';
+        categorySelect.appendChild(allOpt);
+        Array.from(categories).sort().forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat;
+            categorySelect.appendChild(opt);
+        });
+        if (currentVal && (currentVal === '__all__' || categories.has(currentVal))) {
+            categorySelect.value = currentVal;
+        } else {
+            categorySelect.value = '__all__';
+        }
+        updateCategoryCount();
+    }
+
+    function updateCategoryCount() {
+        const selected = categorySelect.value;
+        const available = getAvailableByCategory(selected);
+        const total = ALL_DISHES.length;
+        if (selected === '__all__') {
+            categoryCount.textContent = `${available.length} / ${total} dishes available`;
+        } else {
+            const totalInCat = ALL_DISHES.filter(d => d.category === selected).length;
+            categoryCount.textContent = `${available.length} / ${totalInCat} in "${selected}"`;
+        }
+    }
+
+    function updateSelectedCount() {
+        const count = selectedForDelete.size;
+        if (selectedCount) selectedCount.textContent = `(${count} selected)`;
+        if (bulkDeleteBtn) {
+            bulkDeleteBtn.classList.toggle('visible', deleteMode && count > 0);
+            bulkDeleteBtn.textContent = count > 0 ? `🗑️ Delete Selected (${count})` : '🗑️ Delete Selected';
+        }
+        if (selectAllCheckbox) {
+            const filtered = getFilteredDishes();
+            const availItems = filtered.filter(d => !picked.includes(d.name));
+            selectAllCheckbox.checked = count > 0 && count === availItems.length;
+            selectAllCheckbox.indeterminate = count > 0 && count < availItems.length;
+        }
+    }
+
+    function getFilteredDishes() {
+        const selected = categorySelect.value;
+        return selected === '__all__' ? ALL_DISHES : ALL_DISHES.filter(d => d.category === selected);
+    }
+
+    function toggleSelectDish(dishName) {
+        if (!deleteMode) return;
+        if (picked.includes(dishName)) return;
+        if (selectedForDelete.has(dishName)) selectedForDelete.delete(dishName);
+        else selectedForDelete.add(dishName);
+        updateSelectedCount();
+        renderItemList();
+    }
+
+    function selectAllDishes() {
+        if (!deleteMode) return;
+        const filtered = getFilteredDishes();
+        const availItems = filtered.filter(d => !picked.includes(d.name));
+        if (selectAllCheckbox.checked) availItems.forEach(d => selectedForDelete.add(d.name));
+        else availItems.forEach(d => selectedForDelete.delete(d.name));
+        updateSelectedCount();
+        renderItemList();
+    }
+
+    function showBulkDeleteModal() {
+        if (selectedForDelete.size === 0) { showToast('No dishes selected.', 2000); return; }
+        const names = Array.from(selectedForDelete);
+        bulkDeleteCount.textContent = `${names.length} dish(es)`;
+        bulkDeleteList.textContent = names.slice(0, 10).join(', ') + (names.length > 10 ? ` and ${names.length - 10} more...` : '');
+        bulkDeleteModal.classList.add('active');
+    }
+
+    async function confirmBulkDelete() {
+        const toDelete = Array.from(selectedForDelete);
+        if (toDelete.length === 0) { bulkDeleteModal.classList.remove('active'); return; }
+        toDelete.forEach(name => {
+            const i = ALL_DISHES.findIndex(d => d.name === name);
+            if (i !== -1) ALL_DISHES.splice(i, 1);
+            const p = picked.indexOf(name);
+            if (p !== -1) picked.splice(p, 1);
+        });
+        selectedForDelete.clear();
+        bulkDeleteModal.classList.remove('active');
+        updateUI();
+        showToast(`🗑️ Deleted ${toDelete.length} dish(es)!`, 2500);
+        await pushAllToCloud();
+    }
+
+    // ============================================================
+    // MANUAL ADD — with Today / Tomorrow / Yesterday / Custom / None
+    // ============================================================
+    function openManualAddModal() {
+        manualDishName.value = '';
+        manualCategory.value = '';
+        manualCook.value = '';
+        manualAddError.classList.remove('show');
+        // Reset date option to Today
+        const todayRadio = document.querySelector('input[name="manualDate"][value="today"]');
+        if (todayRadio) todayRadio.checked = true;
+        document.querySelectorAll('#manualDateOptions label').forEach(l => l.classList.remove('selected'));
+        const mtl = document.getElementById('manualTodayLabel');
+        if (mtl) mtl.classList.add('selected');
+        // Hide custom row & clear
+        if (manualCustomDateRow) manualCustomDateRow.classList.remove('visible');
+        if (manualCustomDateInput) manualCustomDateInput.value = '';
+        if (manualCustomDatePreview) manualCustomDatePreview.textContent = '';
+        manualAddModal.classList.add('active');
+        setTimeout(() => manualDishName.focus(), 100);
+    }
+
+    function closeManualAddModal() {
+        manualAddModal.classList.remove('active');
+        manualAddError.classList.remove('show');
+        if (manualCustomDateRow) manualCustomDateRow.classList.remove('visible');
+    }
+
+    async function confirmManualAdd() {
+        const dishName = (manualDishName.value || '').trim();
+        if (!dishName) {
+            manualAddError.classList.add('show');
+            manualDishName.focus();
+            setTimeout(() => manualAddError.classList.remove('show'), 3000);
+            return;
+        }
+        const category = (manualCategory.value || '').trim() || 'Uncategorized';
+        const cook = manualCook.value;
+
+        // Determine selected date option
+        let dateOpt = 'today';
+        document.querySelectorAll('input[name="manualDate"]').forEach(r => { if (r.checked) dateOpt = r.value; });
+
+        // Validate custom
+        if (dateOpt === 'custom') {
+            if (!manualCustomDateInput || !manualCustomDateInput.value) {
+                showToast('⚠️ Please select a custom date.', 2500);
+                if (manualCustomDateInput) manualCustomDateInput.focus();
+                return;
+            }
+        }
+
+        let dateObj;
+        let dateTag;
+        if (dateOpt === 'none') {
+            dateObj = new Date();
+            dateTag = '';
+        } else {
+            dateObj = getDateForOption(dateOpt, manualCustomDateInput ? manualCustomDateInput.value : '');
+            if (dateOpt === 'today') dateTag = '📅 Today';
+            else if (dateOpt === 'tomorrow') dateTag = '📅 Tomorrow';
+            else if (dateOpt === 'yesterday') dateTag = '📅 Yesterday';
+            else if (dateOpt === 'custom') dateTag = '📅 ' + getFormattedDate(dateObj);
+            else dateTag = '📅 Today';
+        }
+
+        history.push({
+            dish: dishName,
+            category: category,
+            date: getFullDateTime(dateObj),
+            displayDate: getFormattedDate(dateObj),
+            dateTag: dateTag,
+            cook: cook
+        });
+        if (!picked.includes(dishName)) picked.push(dishName);
+        if (!ALL_DISHES.some(d => d.name.toLowerCase() === dishName.toLowerCase())) {
+            ALL_DISHES.push({ name: dishName, category: category });
+        }
+
+        updateUI();
+        closeManualAddModal();
+        showToast('✍️ Added: ' + dishName, 2500);
+        await pushAllToCloud();
+    }
+
+    // Setup manual date radio listeners
+    function setupManualDateOptions() {
+        document.querySelectorAll('#manualDateOptions label').forEach(label => {
+            label.addEventListener('click', function() {
+                const radio = this.querySelector('input[type="radio"]');
+                if (radio) {
+                    radio.checked = true;
+                    document.querySelectorAll('#manualDateOptions label').forEach(l => l.classList.remove('selected'));
+                    this.classList.add('selected');
+                    if (radio.value === 'custom') {
+                        if (manualCustomDateRow) manualCustomDateRow.classList.add('visible');
+                        if (manualCustomDateInput) {
+                            if (!manualCustomDateInput.value) {
+                                const today = new Date();
+                                const yyyy = today.getFullYear();
+                                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                                const dd = String(today.getDate()).padStart(2, '0');
+                                manualCustomDateInput.value = `${yyyy}-${mm}-${dd}`;
+                                updateManualCustomDatePreview();
+                            }
+                            setTimeout(() => manualCustomDateInput.focus(), 100);
+                        }
+                    } else {
+                        if (manualCustomDateRow) manualCustomDateRow.classList.remove('visible');
+                    }
+                }
+            });
+        });
+        if (manualCustomDateInput) {
+            manualCustomDateInput.addEventListener('change', updateManualCustomDatePreview);
+            manualCustomDateInput.addEventListener('input', updateManualCustomDatePreview);
+        }
+    }
+
+    function updateManualCustomDatePreview() {
+        if (!manualCustomDateInput || !manualCustomDatePreview) return;
+        if (!manualCustomDateInput.value) { manualCustomDatePreview.textContent = ''; return; }
+        const parts = manualCustomDateInput.value.split('-');
+        if (parts.length === 3) {
+            const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            manualCustomDatePreview.textContent = '→ ' + getFormattedDate(d);
+        }
+    }
+
+    function openHistoryDeleteModal(index) {
+        if (index < 0 || index >= history.length) return;
+        historyEntryToDelete = index;
+        historyDeleteDish.textContent = `🍽️ ${history[index].dish}`;
+        historyDeletePassword.value = '';
+        historyDeleteError.classList.remove('show');
+        historyDeleteModal.classList.add('active');
+        historyDeletePassword.focus();
+    }
+
+    function closeHistoryDeleteModal() {
+        historyDeleteModal.classList.remove('active');
+        historyEntryToDelete = null;
+        historyDeletePassword.value = '';
+        historyDeleteError.classList.remove('show');
+    }
+
+    async function confirmHistoryDelete() {
+        if (historyDeletePassword.value === PASSWORD) {
+            if (historyEntryToDelete !== null && historyEntryToDelete >= 0 && historyEntryToDelete < history.length) {
+                const dishName = history[historyEntryToDelete].dish;
+                history.splice(historyEntryToDelete, 1);
+                const p = picked.indexOf(dishName);
+                if (p !== -1) picked.splice(p, 1);
+                closeHistoryDeleteModal();
+                updateUI();
+                showToast(`🗑️ Deleted: ${dishName}`, 2500);
+                await pushAllToCloud();
+            }
+        } else {
+            historyDeleteError.classList.add('show');
+            historyDeletePassword.value = '';
+            historyDeletePassword.focus();
+            setTimeout(() => historyDeleteError.classList.remove('show'), 3000);
+        }
+    }
+
+    function updateUI() {
+        renderItemList();
+        renderHistory();
+        updateCategoryDropdown();
+        updateCategoryModalDropdown();
+
+        const total = ALL_DISHES.length;
+        const pCount = picked.length;
+        const remaining = total - pCount;
+
+        statusBadge.innerHTML = `🔁 ${pCount} / ${total} picked
+            <span class="sync-badge ${syncBadge ? syncBadge.className.replace('sync-badge ','') : 'offline'}" id="syncBadge">${syncBadge ? syncBadge.textContent : '🔄'}</span>
+            <span class="delete-mode-indicator ${deleteMode ? 'active' : 'inactive'}" id="deleteIndicator">${deleteMode ? '🔓 unlocked' : '🔒 locked'}</span>`;
+
+        remainingCount.textContent = `📋 ${remaining} remaining`;
+        historyCount.textContent = `📚 ${history.length} total made`;
+        if (refreshBtn) refreshBtn.disabled = (total === 0);
+
+        if (total === 0) {
+            resetNotice.textContent = '📭 Add dishes using "Add Dish" or "Import CSV"';
+        } else if (remaining === 0) {
+            resetNotice.textContent = '🎉 All dishes picked! click "reset all"';
+        } else {
+            resetNotice.textContent = 'click refresh to pick a dish';
+        }
+
+        if (total === 0) updatePopup(null, null, null);
+        updateDeleteIndicator();
+        updateSelectedCount();
+    }
+
+    function updateCategoryModalDropdown() {
+        const currentVal = categoryModalSelect.value;
+        categoryModalSelect.innerHTML = '';
+        const allOpt = document.createElement('option');
+        allOpt.value = '__all__';
+        allOpt.textContent = '📋 All Categories';
+        categoryModalSelect.appendChild(allOpt);
+        Array.from(categories).sort().forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = `${cat} (${getAvailableByCategory(cat).length} available)`;
+            categoryModalSelect.appendChild(opt);
+        });
+        const rndOpt = document.createElement('option');
+        rndOpt.value = '__random__';
+        rndOpt.textContent = '🎲 Random Category';
+        categoryModalSelect.appendChild(rndOpt);
+        if (currentVal && (currentVal === '__all__' || currentVal === '__random__' || categories.has(currentVal))) {
+            categoryModalSelect.value = currentVal;
+        } else {
+            categoryModalSelect.value = '__all__';
+        }
+        updateCategoryModalCount();
+    }
+
+    function updateCategoryModalCount() {
+        const selected = categoryModalSelect.value;
+        if (selected === '__random__') {
+            categoryModalCount.textContent = `🎲 ${getAvailableDishes().length} dishes across all categories`;
+            return;
+        }
+        const available = getAvailableByCategory(selected);
+        if (selected === '__all__') {
+            categoryModalCount.textContent = `${available.length} / ${ALL_DISHES.length} dishes available`;
+        } else {
+            const total = ALL_DISHES.filter(d => d.category === selected).length;
+            categoryModalCount.textContent = `${available.length} / ${total} in "${selected}"`;
+        }
+    }
+
+    function renderItemList() {
+        if (!itemGrid) return;
+        itemGrid.innerHTML = '';
+        if (ALL_DISHES.length === 0) {
+            const e = document.createElement('span');
+            e.style.cssText = 'color:#b09880;font-style:italic;padding:0.5rem;';
+            e.textContent = 'no dishes yet — add some!';
+            itemGrid.appendChild(e);
+            return;
+        }
+        const selected = categorySelect.value;
+        const filtered = selected === '__all__' ? ALL_DISHES : ALL_DISHES.filter(d => d.category === selected);
+        if (filtered.length === 0) {
+            const e = document.createElement('span');
+            e.style.cssText = 'color:#b09880;font-style:italic;padding:0.5rem;';
+            e.textContent = `no dishes in "${selected}"`;
+            itemGrid.appendChild(e);
+            return;
+        }
+        filtered.forEach(dish => {
+            const badge = document.createElement('span');
+            badge.className = 'item-badge';
+            if (picked.includes(dish.name)) badge.classList.add('consumed');
+            if (deleteMode && !picked.includes(dish.name)) badge.classList.add('delete-mode-active');
+            if (deleteMode && !picked.includes(dish.name)) {
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.className = 'select-checkbox';
+                cb.checked = selectedForDelete.has(dish.name);
+                cb.addEventListener('change', (e) => { e.stopPropagation(); toggleSelectDish(dish.name); });
+                badge.appendChild(cb);
+            }
+            const txt = document.createElement('span');
+            txt.textContent = dish.name;
+            badge.appendChild(txt);
+            const catTag = document.createElement('span');
+            catTag.className = 'category-tag';
+            catTag.textContent = dish.category;
+            badge.appendChild(catTag);
+            if (deleteMode && !picked.includes(dish.name)) {
+                const delBtn = document.createElement('button');
+                delBtn.className = 'delete-btn';
+                delBtn.textContent = '×';
+                delBtn.addEventListener('click', (e) => { e.stopPropagation(); deleteDish(dish.name); });
+                badge.appendChild(delBtn);
+            }
+            if (selectedForDelete.has(dish.name) && !picked.includes(dish.name)) {
+                badge.classList.add('selected-for-delete');
+            }
+            badge.addEventListener('click', (e) => {
+                if (deleteMode && !picked.includes(dish.name) && !e.target.closest('.delete-btn') && !e.target.closest('.select-checkbox')) {
+                    toggleSelectDish(dish.name);
+                }
+            });
+            itemGrid.appendChild(badge);
+        });
+    }
+
+    function renderHistory() {
+        if (!historyList) return;
+        historyList.innerHTML = '';
+        if (history.length === 0) {
+            const e = document.createElement('div');
+            e.className = 'history-empty';
+            e.textContent = 'no dishes made yet';
+            historyList.appendChild(e);
+            return;
+        }
+        const reversed = [...history].reverse();
+        reversed.forEach((entry, index) => {
+            const originalIndex = history.length - 1 - index;
+            const item = document.createElement('div');
+            item.className = 'history-item';
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'dish-name';
+            nameSpan.textContent = entry.dish;
+
+            const catSpan = document.createElement('span');
+            catSpan.className = 'dish-category';
+            catSpan.textContent = entry.category || 'Uncategorized';
+
+            const dateWrap = document.createElement('span');
+            dateWrap.style.cssText = 'display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;';
+            const dateSpan = document.createElement('span');
+            dateSpan.className = 'dish-date';
+            dateSpan.textContent = entry.displayDate || entry.date || getCurrentDateTime();
+            dateWrap.appendChild(dateSpan);
+            if (entry.dateTag) {
+                const dt = document.createElement('span');
+                dt.className = 'dish-date-tag';
+                dt.textContent = entry.dateTag;
+                dateWrap.appendChild(dt);
+            }
+
+            const cookTags = document.createElement('div');
+            cookTags.className = 'cook-tags';
+            const deepTag = document.createElement('span');
+            deepTag.className = `cook-tag ${entry.cook === 'deep' || entry.cook === 'both' ? 'active-deep' : 'inactive'}`;
+            deepTag.textContent = '👨‍🍳 Deep';
+            deepTag.addEventListener('click', () => toggleCook(originalIndex, 'deep'));
+            const honeyTag = document.createElement('span');
+            honeyTag.className = `cook-tag ${entry.cook === 'honey' || entry.cook === 'both' ? 'active-honey' : 'inactive'}`;
+            honeyTag.textContent = '👩‍🍳 Honey';
+            honeyTag.addEventListener('click', () => toggleCook(originalIndex, 'honey'));
+            cookTags.appendChild(deepTag);
+            cookTags.appendChild(honeyTag);
+
+            const nameCatWrap = document.createElement('div');
+            nameCatWrap.style.cssText = 'display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;';
+            nameCatWrap.appendChild(nameSpan);
+            nameCatWrap.appendChild(catSpan);
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'history-delete-btn';
+            delBtn.textContent = '🗑️';
+            delBtn.addEventListener('click', (e) => { e.stopPropagation(); openHistoryDeleteModal(originalIndex); });
+
+            item.appendChild(nameCatWrap);
+            item.appendChild(dateWrap);
+            item.appendChild(cookTags);
+            item.appendChild(delBtn);
+            historyList.appendChild(item);
+        });
+    }
+
+    async function toggleCook(historyIndex, cook) {
+        if (historyIndex < 0 || historyIndex >= history.length) return;
+        const entry = history[historyIndex];
+        if (!entry) return;
+        if (entry.cook === cook) {
+            if (entry.cook === 'both') entry.cook = (cook === 'deep') ? 'honey' : 'deep';
+            else entry.cook = '';
+        } else if (entry.cook === '') entry.cook = cook;
+        else if (entry.cook === 'deep' && cook === 'honey') entry.cook = 'both';
+        else if (entry.cook === 'honey' && cook === 'deep') entry.cook = 'both';
+        else if (entry.cook === 'both') entry.cook = (cook === 'deep') ? 'honey' : 'deep';
+        renderHistory();
+        await pushAllToCloud();
+    }
+
+    async function deleteDish(dishName) {
+        if (!deleteMode) { showToast('🔒 Locked.', 2000); return; }
+        if (picked.includes(dishName)) { showToast('⚠️ Already picked.', 2000); return; }
+        const i = ALL_DISHES.findIndex(d => d.name === dishName);
+        if (i !== -1) {
+            ALL_DISHES.splice(i, 1);
+            selectedForDelete.delete(dishName);
+            updateUI();
+            showToast(`🗑️ Deleted: ${dishName}`, 2500);
+            await pushAllToCloud();
+        }
+    }
+
+    function pickNextDishFromCategory(category, dateOption, customDateValue) {
+        let available;
+        if (category === '__random__') {
+            const availCats = Array.from(categories).filter(cat => getAvailableByCategory(cat).length > 0);
+            if (availCats.length === 0) return null;
+            available = getAvailableByCategory(availCats[Math.floor(Math.random() * availCats.length)]);
+        } else {
+            available = getAvailableByCategory(category);
+        }
+        if (available.length === 0) return null;
+        const dish = available[Math.floor(Math.random() * available.length)];
+        const dateObj = getDateForOption(dateOption, customDateValue);
+        let dateTag;
+        if (dateOption === 'today') dateTag = '📅 Today';
+        else if (dateOption === 'tomorrow') dateTag = '📅 Tomorrow';
+        else if (dateOption === 'yesterday') dateTag = '📅 Yesterday';
+        else if (dateOption === 'custom') dateTag = '📅 ' + getFormattedDate(dateObj);
+        else dateTag = '📅 Today';
+
+        picked.push(dish.name);
+        history.push({
+            dish: dish.name,
+            category: dish.category,
+            date: getFullDateTime(dateObj),
+            displayDate: getFormattedDate(dateObj),
+            dateTag: dateTag,
+            cook: ''
+        });
+        return { dish, dateTag };
+    }
+
+    function updatePopup(dish, category, dateInfo) {
+        if (!popupDisplay) return;
+        if (!dish) {
+            popupDisplay.innerHTML = `<span class="popup-empty">✨ click refresh to pick a dish</span>`;
+            return;
+        }
+        popupDisplay.innerHTML = '';
+        const wrap = document.createElement('span');
+        wrap.style.cssText = 'display:inline-flex;align-items:center;gap:0.8rem;flex-wrap:wrap;justify-content:center;';
+        const icon = document.createElement('span');
+        icon.className = 'popup-icon';
+        icon.textContent = '🍽️';
+        const text = document.createElement('span');
+        text.className = 'popup-text';
+        text.textContent = dish;
+        const catTag = document.createElement('span');
+        catTag.className = 'popup-category';
+        catTag.textContent = category || 'Uncategorized';
+        const dateTag = document.createElement('span');
+        dateTag.className = 'popup-date';
+        dateTag.textContent = dateInfo || '📅 Today';
+        const tag = document.createElement('span');
+        tag.className = 'popup-tag';
+        tag.textContent = `#${picked.length}`;
+        wrap.appendChild(icon);
+        wrap.appendChild(text);
+        wrap.appendChild(catTag);
+        wrap.appendChild(dateTag);
+        wrap.appendChild(tag);
+        popupDisplay.appendChild(wrap);
+    }
+
+    function openCategoryModal() {
+        if (ALL_DISHES.length === 0) { showToast('📭 No dishes yet.', 2500); return; }
+        if (getAvailableDishes().length === 0) { showToast('🎉 All picked! Reset first.', 2500); return; }
+        const todayRadio = document.querySelector('input[name="dishDate"][value="today"]');
+        const tomorrowRadio = document.querySelector('input[name="dishDate"][value="tomorrow"]');
+        const yesterdayRadio = document.querySelector('input[name="dishDate"][value="yesterday"]');
+        const customRadio = document.querySelector('input[name="dishDate"][value="custom"]');
+        if (todayRadio) todayRadio.checked = true;
+        if (tomorrowRadio) tomorrowRadio.checked = false;
+        if (yesterdayRadio) yesterdayRadio.checked = false;
+        if (customRadio) customRadio.checked = false;
+        document.querySelectorAll('.date-option label').forEach(l => l.classList.remove('selected'));
+        const tl = document.getElementById('todayLabel');
+        if (tl) tl.classList.add('selected');
+        if (customDateRow) customDateRow.classList.remove('visible');
+        if (customDateInput) customDateInput.value = '';
+        if (customDatePreview) customDatePreview.textContent = '';
+        updateCategoryModalDropdown();
+        categoryModal.classList.add('active');
+    }
+
+    function closeCategoryModal() {
+        categoryModal.classList.remove('active');
+        if (customDateRow) customDateRow.classList.remove('visible');
+    }
+
+    async function confirmCategoryPick() {
+        const selected = categoryModalSelect.value;
+        let dateOpt = 'today';
+        document.querySelectorAll('input[name="dishDate"]').forEach(r => { if (r.checked) dateOpt = r.value; });
+
+        if (dateOpt === 'custom') {
+            if (!customDateInput || !customDateInput.value) {
+                showToast('⚠️ Please select a custom date.', 2500);
+                if (customDateInput) customDateInput.focus();
+                return;
+            }
+        }
+
+        if (selected === '__all__' || selected === '__random__' || categories.has(selected)) {
+            const result = pickNextDishFromCategory(selected, dateOpt, customDateInput ? customDateInput.value : '');
+            if (result) {
+                updatePopup(result.dish.name, result.dish.category, result.dateTag);
+                updateUI();
+                if (navigator.vibrate) navigator.vibrate(10);
+                showToast(`🍽️ ${result.dish.name} · ${result.dateTag}`, 2500);
+                closeCategoryModal();
+                await pushAllToCloud();
+            } else {
+                showToast('No dishes available.', 2000);
+            }
+        } else {
+            showToast('Invalid category.', 2000);
+        }
+    }
+
+    function setupDateOptions() {
+        document.querySelectorAll('.date-option label').forEach(label => {
+            label.addEventListener('click', function() {
+                const radio = this.querySelector('input[type="radio"]');
+                if (radio) {
+                    radio.checked = true;
+                    document.querySelectorAll('.date-option label').forEach(l => l.classList.remove('selected'));
+                    this.classList.add('selected');
+                    if (radio.value === 'custom') {
+                        if (customDateRow) customDateRow.classList.add('visible');
+                        if (customDateInput) {
+                            if (!customDateInput.value) {
+                                const today = new Date();
+                                const yyyy = today.getFullYear();
+                                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                                const dd = String(today.getDate()).padStart(2, '0');
+                                customDateInput.value = `${yyyy}-${mm}-${dd}`;
+                                updateCustomDatePreview();
+                            }
+                            setTimeout(() => customDateInput.focus(), 100);
+                        }
+                    } else {
+                        if (customDateRow) customDateRow.classList.remove('visible');
+                    }
+                }
+            });
+        });
+
+        if (customDateInput) {
+            customDateInput.addEventListener('change', updateCustomDatePreview);
+            customDateInput.addEventListener('input', updateCustomDatePreview);
+        }
+    }
+
+    function updateCustomDatePreview() {
+        if (!customDateInput || !customDatePreview) return;
+        if (!customDateInput.value) { customDatePreview.textContent = ''; return; }
+        const parts = customDateInput.value.split('-');
+        if (parts.length === 3) {
+            const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            customDatePreview.textContent = '→ ' + getFormattedDate(d);
+        }
+    }
+
+    async function handleReset() {
+        if (ALL_DISHES.length === 0) { showToast('📭 No dishes to reset.', 2000); return; }
+        picked = [];
+        selectedForDelete.clear();
+        updatePopup(null, null, null);
+        updateUI();
+        showToast('🔄 All dishes available again! (history preserved)', 2000);
+        await pushAllToCloud();
+    }
+
+    function handleClearHistory() {
+        if (history.length === 0) { showToast('📭 No history to clear!', 2000); return; }
+        clearHistoryModal.classList.add('active');
+    }
+
+    async function confirmClearHistory() {
+        history = [];
+        picked = [];
+        selectedForDelete.clear();
+        updatePopup(null, null, null);
+        updateUI();
+        clearHistoryModal.classList.remove('active');
+        showToast('🗑️ All history cleared! (also from cloud)', 2500);
+        await pushAllToCloud();
+    }
+
+    async function addNewDish() {
+        const raw = newDishInput.value.trim();
+        if (!raw) { showToast('⚠️ Enter a dish name.', 2000); return; }
+        const category = newCategoryInput.value.trim() || 'Uncategorized';
+        if (ALL_DISHES.some(d => d.name.toLowerCase() === raw.toLowerCase())) {
+            showToast(`⚠️ "${raw}" already exists.`, 2500);
+            newDishInput.value = '';
+            return;
+        }
+        ALL_DISHES.push({ name: raw, category: category });
+        updateUI();
+        newDishInput.value = '';
+        newCategoryInput.value = '';
+        newDishInput.focus();
+        showToast(`✅ Added: ${raw}`, 2000);
+        await pushAllToCloud();
+    }
+
+    async function handleBulkImport(file) {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            const content = e.target.result;
+            const lines = content.split(/\r?\n/).filter(l => l.trim() !== '');
+            let addedCount = 0;
+            const duplicates = [];
+            lines.forEach((line, idx) => {
+                if (idx === 0 && (line.toLowerCase().includes('dish') || line.toLowerCase().includes('category'))) return;
+                let parts = line.split(',').map(s => s.trim());
+                let dishName, category;
+                if (parts.length >= 2 && parts[1].length > 0) {
+                    dishName = parts[0];
+                    category = parts[1];
+                } else {
+                    dishName = parts[0];
+                    category = 'Uncategorized';
+                }
+                if (dishName) {
+                    if (!ALL_DISHES.some(d => d.name.toLowerCase() === dishName.toLowerCase())) {
+                        ALL_DISHES.push({ name: dishName, category: category });
+                        addedCount++;
+                    } else duplicates.push(dishName);
+                }
+            });
+            if (addedCount > 0) {
+                updateUI();
+                showToast(`✅ Imported ${addedCount} dish(es)! Saving to cloud...`, 2500);
+                if (duplicates.length > 0) {
+                    showToast(`⚠️ Skipped ${duplicates.length} duplicates.`, 3000);
+                }
+                await pushAllToCloud();
+            } else {
+                showToast('ℹ️ No new dishes found.', 2500);
+            }
+            bulkFileInput.value = '';
+        };
+        reader.onerror = function() { showToast('❌ Error reading file.', 2000); bulkFileInput.value = ''; };
+        reader.readAsText(file);
+    }
+
+    function handleExportExcel() {
+        if (ALL_DISHES.length === 0) { showToast('📭 No dishes to export.', 2000); return; }
+        let content = 'Dish Name,Category\n';
+        content += ALL_DISHES.map(d => `"${d.name}","${d.category}"`).join('\n');
+        const blob = new Blob(['\uFEFF' + content], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `dishes_export_${new Date().toISOString().slice(0,10)}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showToast('📤 Exported!', 2000);
+    }
+
+    function generateFullHTMLEmail() {
+        const deepCount = history.filter(e => e.cook === 'deep' || e.cook === 'both').length;
+        const honeyCount = history.filter(e => e.cook === 'honey' || e.cook === 'both').length;
+        const bothCount = history.filter(e => e.cook === 'both').length;
+        const noneCount = history.filter(e => !e.cook).length;
+        const byCat = {};
+        history.forEach(e => {
+            const c = e.category || 'Uncategorized';
+            if (!byCat[c]) byCat[c] = [];
+            byCat[c].push(e);
+        });
+        let html = `<div style="font-family:'Segoe UI',Arial,sans-serif;max-width:800px;margin:0 auto;background:#fffbf8;padding:40px;border-radius:24px;">
+            <h1 style="color:#4d3422;border-bottom:3px solid #a8846a;padding-bottom:15px;text-align:center;">🍽️ My Cooking Log</h1>
+            <p style="text-align:center;color:#7a5f47;"><strong>📅 Generated:</strong> ${getCurrentDateTime()}</p>
+            <div style="font-size:20px;font-weight:bold;color:#4d3422;text-align:center;margin:20px 0;">
+                📊 <span style="font-size:28px;">${history.length}</span> Total Dishes Made
+            </div>
+            <div style="background:#f5f0eb;padding:20px;border-radius:12px;margin:20px 0;">
+                <strong>📈 Summary</strong>
+                <div style="display:flex;justify-content:space-around;flex-wrap:wrap;gap:15px;margin:15px 0;">
+                    <div style="background:white;padding:10px 20px;border-radius:8px;text-align:center;min-width:120px;">
+                        <div style="font-size:24px;font-weight:bold;color:#2c3e50;">${deepCount}</div>
+                        <div style="font-size:12px;color:#7a5f47;">👨‍🍳 Deep</div>
+                    </div>
+                    <div style="background:white;padding:10px 20px;border-radius:8px;text-align:center;min-width:120px;">
+                        <div style="font-size:24px;font-weight:bold;color:#d4a373;">${honeyCount}</div>
+                        <div style="font-size:12px;color:#7a5f47;">👩‍🍳 Honey</div>
+                    </div>
+                    <div style="background:white;padding:10px 20px;border-radius:8px;text-align:center;min-width:120px;">
+                        <div style="font-size:24px;font-weight:bold;color:#8a6e4b;">${bothCount}</div>
+                        <div style="font-size:12px;color:#7a5f47;">👨‍🍳👩‍🍳 Both</div>
+                    </div>
+                    <div style="background:white;padding:10px 20px;border-radius:8px;text-align:center;min-width:120px;">
+                        <div style="font-size:24px;font-weight:bold;color:#b09880;">${noneCount}</div>
+                        <div style="font-size:12px;color:#7a5f47;">⚠️ Not Assigned</div>
+                    </div>
+                </div>
+            </div>`;
+        if (history.length === 0) {
+            html += `<p style="text-align:center;color:#b09880;font-style:italic;">No dishes yet.</p>`;
+        } else {
+            Object.keys(byCat).sort().forEach(cat => {
+                html += `<h3 style="color:white;background:#2d6a4f;padding:8px 16px;border-radius:8px;display:inline-block;">📂 ${cat}</h3>
+                <table style="width:100%;border-collapse:collapse;margin:15px 0;">
+                    <thead><tr>
+                        <th style="background:#4d3422;color:white;padding:10px;text-align:left;">#</th>
+                        <th style="background:#4d3422;color:white;padding:10px;text-align:left;">🍽️ Dish</th>
+                        <th style="background:#4d3422;color:white;padding:10px;text-align:left;">📅 Date</th>
+                        <th style="background:#4d3422;color:white;padding:10px;text-align:left;">Cook</th>
+                    </tr></thead><tbody>`;
+                byCat[cat].forEach((entry, idx) => {
+                    let cook = '⚠️ Not Assigned';
+                    if (entry.cook === 'deep') cook = '👨‍🍳 Deep';
+                    else if (entry.cook === 'honey') cook = '👩‍🍳 Honey';
+                    else if (entry.cook === 'both') cook = '👨‍🍳👩‍🍳 Both';
+                    html += `<tr style="border-bottom:1px solid #e8ddd0;">
+                        <td style="padding:10px;">${idx + 1}</td>
+                        <td style="padding:10px;font-weight:bold;">${entry.dish}</td>
+                        <td style="padding:10px;color:#7a5f47;">${entry.displayDate || 'N/A'}${entry.dateTag ? ' ' + entry.dateTag : ''}</td>
+                        <td style="padding:10px;">${cook}</td>
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
+            });
+        }
+        html += `<div style="background:#f5f0eb;padding:15px;border-radius:8px;margin:20px 0;">
+            <p><strong>📋 Total dishes:</strong> ${ALL_DISHES.length}</p>
+            <p><strong>📋 Remaining:</strong> ${ALL_DISHES.length - picked.length}</p>
+            <p><strong>📋 Total cooked:</strong> ${history.length}</p>
+        </div>
+        <p style="text-align:center;color:#7a5f47;font-size:12px;">✨ Auto-generated by Dish Picker</p></div>`;
+        return html;
+    }
+
+    function generatePlainTextEmail() {
+        let b = '🍽️ MY COOKING LOG\n' + '═'.repeat(50) + '\n\n';
+        b += '📅 Generated: ' + getCurrentDateTime() + '\n' + '━'.repeat(50) + '\n\n';
+        b += '📊 TOTAL DISHES MADE: ' + history.length + '\n' + '━'.repeat(50) + '\n\n';
+        if (history.length === 0) b += 'No dishes yet.\n';
+        else {
+            const byCat = {};
+            history.forEach(e => {
+                const c = e.category || 'Uncategorized';
+                if (!byCat[c]) byCat[c] = [];
+                byCat[c].push(e);
+            });
+            Object.keys(byCat).sort().forEach(cat => {
+                b += `📂 ${cat.toUpperCase()}\n` + '─'.repeat(40) + '\n';
+                byCat[cat].forEach((entry, idx) => {
+                    b += `  ${idx + 1}. ${entry.dish} — ${entry.displayDate || 'N/A'}`;
+                    if (entry.dateTag) b += ` ${entry.dateTag}`;
+                    if (entry.cook === 'both') b += ' [DEEP & HONEY]';
+                    else if (entry.cook === 'deep') b += ' [DEEP]';
+                    else if (entry.cook === 'honey') b += ' [HONEY]';
+                    b += '\n';
+                });
+                b += '\n';
+            });
+        }
+        b += '\n' + '═'.repeat(50) + '\n✨ Auto-generated';
+        return b;
+    }
+
+    function optionHTML() {
+        if (history.length === 0) { showToast('📭 No history!', 2500); return; }
+        const full = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>${generateFullHTMLEmail()}</body></html>`;
+        copyToClipboard(full, '🎨 HTML copied!');
+    }
+
+    function optionPlain() {
+        if (history.length === 0) { showToast('📭 No history!', 2500); return; }
+        const sub = encodeURIComponent(getSubjectLine());
+        const body = encodeURIComponent(generatePlainTextEmail());
+        window.location.href = `mailto:?subject=${sub}&body=${body}`;
+        showToast('📧 Email opened!', 2500);
+        closeEmailOptions();
+    }
+
+    function optionHybrid() {
+        if (history.length === 0) { showToast('📭 No history!', 2500); return; }
+        const full = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>${generateFullHTMLEmail()}</body></html>`;
+        copyToClipboard(full, '🔄 HTML copied!');
+    }
+
+    function optionOpen() {
+        if (history.length === 0) { showToast('📭 No history!', 2500); return; }
+        const sub = encodeURIComponent(getSubjectLine());
+        const body = encodeURIComponent(generatePlainTextEmail());
+        window.location.href = `mailto:?subject=${sub}&body=${body}`;
+        showToast('📧 Email opened!', 2500);
+        closeEmailOptions();
+    }
+
+    function copyToClipboard(text, successMsg) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(successMsg, 3000);
+                closeEmailOptions();
+            }).catch(() => fallbackCopy(text, successMsg));
+        } else fallbackCopy(text, successMsg);
+    }
+
+    function fallbackCopy(text, successMsg) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+            document.execCommand('copy');
+            showToast(successMsg, 2000);
+            closeEmailOptions();
+        } catch (e) { showToast('❌ Copy failed.', 2000); }
+        document.body.removeChild(ta);
+    }
+
+    function openEmailOptions() {
+        if (history.length === 0) { showToast('📭 No history!', 2500); return; }
+        emailOptionsModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeEmailOptions() {
+        emailOptionsModal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function openModal() {
+        if (deleteMode) {
+            deleteMode = false;
+            selectedForDelete.clear();
+            updateUI();
+            showToast('🔒 Locked', 2000);
+            return;
+        }
+        modal.classList.add('active');
+        passwordInput.value = '';
+        passwordError.classList.remove('show');
+        passwordInput.focus();
+    }
+
+    function closeModal() {
+        modal.classList.remove('active');
+        passwordError.classList.remove('show');
+    }
+
+    function verifyPassword() {
+        if (passwordInput.value === PASSWORD) {
+            deleteMode = true;
+            closeModal();
+            showToast('🔓 Delete mode ON', 3000);
+            updateUI();
+        } else {
+            passwordError.classList.add('show');
+            passwordInput.value = '';
+            passwordInput.focus();
+            setTimeout(() => passwordError.classList.remove('show'), 3000);
+        }
+    }
+
+    function saveLocalBackup() {
+        try {
+            localStorage.setItem('dishPickerData', JSON.stringify({
+                history: history,
+                allDishes: ALL_DISHES,
+                picked: picked,
+                savedAt: Date.now()
+            }));
+        } catch (e) {}
+    }
+
+    function loadLocalBackup() {
+        try {
+            const saved = localStorage.getItem('dishPickerData');
+            if (!saved) return false;
+            const parsed = JSON.parse(saved);
+            if (parsed.history && Array.isArray(parsed.history)) history = parsed.history;
+            if (parsed.allDishes && Array.isArray(parsed.allDishes)) {
+                ALL_DISHES = parsed.allDishes.map(d => typeof d === 'string' ? { name: d, category: 'Uncategorized' } : d);
+            }
+            if (parsed.picked && Array.isArray(parsed.picked)) picked = parsed.picked;
+            return true;
+        } catch (e) { return false; }
+    }
+
+    async function init() {
+        loadLocalBackup();
+        ALL_DISHES = ALL_DISHES.map(d => typeof d === 'string' ? { name: d, category: 'Uncategorized' } : d);
+        updateUI();
+        updatePopup(null, null, null);
+        setupDateOptions();
+        setupManualDateOptions();
+
+        if (supabaseClient) {
+            setSyncStatus('syncing', '🔄 connecting...');
+            const ok = await pullAllFromCloud();
+            if (ok) {
+                ALL_DISHES = ok.dishes;
+                history = ok.history;
+                picked = ok.picked;
+                lastSyncTime = Date.now();
+                setSyncStatus('online', '☁️ synced');
+                updateLastSyncInfo();
+                updateUI();
+                showToast('☁️ Loaded from cloud!', 2000);
+            } else {
+                setSyncStatus('offline', '⚠️ offline');
+            }
+            startAutoSync();
+        } else {
+            setSyncStatus('offline', '⚠️ no cloud');
+        }
+
+        if (refreshBtn) refreshBtn.addEventListener('click', openCategoryModal);
+        if (categoryModalConfirm) categoryModalConfirm.addEventListener('click', confirmCategoryPick);
+        if (categoryModalCancel) categoryModalCancel.addEventListener('click', closeCategoryModal);
+        if (categoryModal) categoryModal.addEventListener('click', (e) => { if (e.target === categoryModal) closeCategoryModal(); });
+        if (categoryModalSelect) categoryModalSelect.addEventListener('change', updateCategoryModalCount);
+
+        if (historyDeleteConfirm) historyDeleteConfirm.addEventListener('click', confirmHistoryDelete);
+        if (historyDeleteCancel) historyDeleteCancel.addEventListener('click', closeHistoryDeleteModal);
+        if (historyDeleteModal) historyDeleteModal.addEventListener('click', (e) => { if (e.target === historyDeleteModal) closeHistoryDeleteModal(); });
+        if (historyDeletePassword) historyDeletePassword.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); confirmHistoryDelete(); }
+            if (e.key === 'Escape') closeHistoryDeleteModal();
+        });
+
+        if (resetBtn) resetBtn.addEventListener('click', handleReset);
+        if (clearHistoryBtn) clearHistoryBtn.addEventListener('click', handleClearHistory);
+        if (emailBtn) emailBtn.addEventListener('click', openEmailOptions);
+        if (addDishBtn) addDishBtn.addEventListener('click', addNewDish);
+        if (deleteModeBtn) deleteModeBtn.addEventListener('click', openModal);
+        if (syncBtn) syncBtn.addEventListener('click', () => syncNow(false));
+
+        if (manualAddBtn) manualAddBtn.addEventListener('click', openManualAddModal);
+        if (manualAddConfirm) manualAddConfirm.addEventListener('click', confirmManualAdd);
+        if (manualAddCancel) manualAddCancel.addEventListener('click', closeManualAddModal);
+        if (manualAddModal) manualAddModal.addEventListener('click', (e) => { if (e.target === manualAddModal) closeManualAddModal(); });
+        if (manualDishName) manualDishName.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); confirmManualAdd(); }
+            if (e.key === 'Escape') closeManualAddModal();
+        });
+        if (manualCategory) manualCategory.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); confirmManualAdd(); }
+        });
+
+        if (bulkDeleteBtn) bulkDeleteBtn.addEventListener('click', showBulkDeleteModal);
+        if (bulkDeleteConfirm) bulkDeleteConfirm.addEventListener('click', confirmBulkDelete);
+        if (bulkDeleteCancel) bulkDeleteCancel.addEventListener('click', () => bulkDeleteModal.classList.remove('active'));
+        if (bulkDeleteModal) bulkDeleteModal.addEventListener('click', (e) => { if (e.target === bulkDeleteModal) bulkDeleteModal.classList.remove('active'); });
+
+        if (selectAllCheckbox) selectAllCheckbox.addEventListener('change', selectAllDishes);
+        if (categorySelect) categorySelect.addEventListener('change', () => {
+            selectedForDelete.clear();
+            updateCategoryCount();
+            renderItemList();
+            updateSelectedCount();
+        });
+
+        if (bulkFileInput) bulkFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleBulkImport(e.target.files[0]);
+        });
+        if (exportExcelBtn) exportExcelBtn.addEventListener('click', handleExportExcel);
+
+        if (clearHistoryConfirm) clearHistoryConfirm.addEventListener('click', confirmClearHistory);
+        if (clearHistoryCancel) clearHistoryCancel.addEventListener('click', () => clearHistoryModal.classList.remove('active'));
+        if (clearHistoryModal) clearHistoryModal.addEventListener('click', (e) => { if (e.target === clearHistoryModal) clearHistoryModal.classList.remove('active'); });
+
+        if (emailOptionsClose) emailOptionsClose.addEventListener('click', closeEmailOptions);
+        if (htmlOptionBtn) htmlOptionBtn.addEventListener('click', optionHTML);
+        if (plainOptionBtn) plainOptionBtn.addEventListener('click', optionPlain);
+        if (hybridOptionBtn) hybridOptionBtn.addEventListener('click', optionHybrid);
+        if (openOptionBtn) openOptionBtn.addEventListener('click', optionOpen);
+        if (emailOptionsModal) emailOptionsModal.addEventListener('click', (e) => { if (e.target === emailOptionsModal) closeEmailOptions(); });
+
+        if (newDishInput) newDishInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); addNewDish(); }
+        });
+        if (newCategoryInput) newCategoryInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); addNewDish(); }
+        });
+
+        if (modalConfirm) modalConfirm.addEventListener('click', verifyPassword);
+        if (modalCancel) modalCancel.addEventListener('click', closeModal);
+        if (passwordInput) passwordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); verifyPassword(); }
+            if (e.key === 'Escape') closeModal();
+        });
+        if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+            if ((e.key === 'r' || e.key === 'R') && !refreshBtn?.disabled) {
+                e.preventDefault();
+                openCategoryModal();
+            }
+            if (e.key === 'Escape') {
+                if (categoryModal.classList.contains('active')) closeCategoryModal();
+                else if (historyDeleteModal.classList.contains('active')) closeHistoryDeleteModal();
+                else if (manualAddModal.classList.contains('active')) closeManualAddModal();
+                else if (modal.classList.contains('active')) closeModal();
+                else if (emailOptionsModal.classList.contains('active')) closeEmailOptions();
+                else if (clearHistoryModal.classList.contains('active')) clearHistoryModal.classList.remove('active');
+                else if (bulkDeleteModal.classList.contains('active')) bulkDeleteModal.classList.remove('active');
+            }
+        });
+
+        document.addEventListener('visibilitychange', async () => {
+            if (!document.hidden && supabaseClient) {
+                const before = JSON.stringify({ h: history, d: ALL_DISHES, p: picked });
+                const ok = await pullAllFromCloud();
+                if (ok) {
+                    const after = JSON.stringify({ h: ok.history, d: ok.dishes, p: ok.picked });
+                    if (before !== after) {
+                        ALL_DISHES = ok.dishes;
+                        history = ok.history;
+                        picked = ok.picked;
+                        updateUI();
+                        showToast('🔄 Refreshed from cloud', 2000);
+                    }
+                }
+            }
+        });
+
+        setInterval(saveLocalBackup, 5000);
+
+        console.log('🍽️ Dish Picker cloud-synced ready!');
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+</script>
+
+</body>
+</html>
