@@ -428,8 +428,6 @@
         .btn-outline:hover { background: rgba(255, 248, 240, 0.7); border-color: #b09078; transform: scale(1.02); }
         .btn-email { background: #2d6a4f; color: #fef3e6; }
         .btn-email:hover { background: #1d4d38; transform: scale(1.02); }
-        .btn-whatsapp { background: linear-gradient(135deg, #25D366, #128C7E); color: white; }
-        .btn-whatsapp:hover { background: linear-gradient(135deg, #1fa855, #0d6d62); transform: scale(1.02); }
         .btn-danger { background: #c0392b; color: #fef3e6; }
         .btn-danger:hover { background: #e74c3c; transform: scale(1.02); }
         .btn-clear { background: #8e44ad; color: #fef3e6; }
@@ -828,17 +826,8 @@
             box-shadow: 0 24px 60px rgba(37, 211, 102, 0.35), 0 0 80px rgba(37, 211, 102, 0.25);
             border: 2px solid rgba(37, 211, 102, 0.5);
             text-align: center;
-            animation: modalPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        @keyframes modalPop {
-            0%   { transform: scale(0.85) translateY(20px); opacity: 0; }
-            100% { transform: scale(1) translateY(0); opacity: 1; }
-        }
-        .wa-content h3 {
-            color: #128C7E;
-            font-size: 1.5rem;
-            margin-bottom: 0.4rem;
-        }
+        .wa-content h3 { color: #128C7E; font-size: 1.5rem; margin-bottom: 0.4rem; }
         .wa-section-label {
             display: flex;
             align-items: center;
@@ -862,12 +851,8 @@
             padding: 4px 10px;
             border-radius: 20px;
             background: rgba(37, 211, 102, 0.12);
-            transition: all 0.2s ease;
         }
-        .wa-section-label .add-new-link:hover {
-            background: rgba(37, 211, 102, 0.25);
-            transform: scale(1.05);
-        }
+        .wa-section-label .add-new-link:hover { background: rgba(37, 211, 102, 0.25); }
         .wa-recipients {
             display: flex;
             flex-direction: column;
@@ -894,7 +879,6 @@
             border-color: #25D366;
             background: #f0fff4;
             transform: translateX(3px);
-            box-shadow: 0 6px 16px rgba(37, 211, 102, 0.2);
         }
         .wa-recipient.selected {
             border-color: #128C7E;
@@ -946,7 +930,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
             flex-shrink: 0;
             font-family: inherit;
         }
@@ -986,7 +969,6 @@
             font-family: inherit;
             background: white;
             color: #128C7E;
-            transition: all 0.3s ease;
         }
         .wa-add-form input:focus {
             border-color: #25D366;
@@ -1005,23 +987,14 @@
             font-weight: 600;
             cursor: pointer;
             font-family: inherit;
-            transition: all 0.25s ease;
         }
         .wa-add-form .wa-add-buttons .wa-save-btn {
             background: linear-gradient(135deg, #25D366, #128C7E);
             color: white;
-            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35);
-        }
-        .wa-add-form .wa-add-buttons .wa-save-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(37, 211, 102, 0.5);
         }
         .wa-add-form .wa-add-buttons .wa-cancel-add {
             background: #f0e5d8;
             color: #7a5f47;
-        }
-        .wa-add-form .wa-add-buttons .wa-cancel-add:hover {
-            background: #e0d2c0;
         }
         .wa-preview {
             background: white;
@@ -1062,30 +1035,22 @@
             font-weight: 600;
             cursor: pointer;
             font-family: inherit;
-            transition: all 0.3s ease;
         }
         .wa-content .wa-buttons .wa-send {
             background: linear-gradient(135deg, #25D366, #128C7E);
             color: white;
-            box-shadow: 0 6px 16px rgba(37, 211, 102, 0.4);
         }
         .wa-content .wa-buttons .wa-send:hover {
             transform: translateY(-2px) scale(1.04);
-            box-shadow: 0 10px 26px rgba(37, 211, 102, 0.6);
         }
         .wa-content .wa-buttons .wa-send:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
-            box-shadow: none;
         }
         .wa-content .wa-buttons .wa-cancel {
             background: #f0e5d8;
             color: #7a5f47;
-        }
-        .wa-content .wa-buttons .wa-cancel:hover {
-            background: #e0d2c0;
-            transform: translateY(-2px);
         }
         .wa-content .wa-hint {
             font-size: 0.75rem;
@@ -1343,34 +1308,26 @@
     </div>
 </div>
 
-<!-- Email Options Modal -->
+<!-- Email Options Modal — ONLY 2 OPTIONS NOW -->
 <div class="email-options-modal" id="emailOptionsModal">
     <div class="email-options-content">
         <button class="close-btn" id="emailOptionsClose">✕</button>
         <h3>📧 Email Options</h3>
         <p class="subtitle">Choose how you want to send your cooking log</p>
         <div class="email-subject-box">
-            <strong>📌 Subject:</strong> <code>🍽️ My Cooking Log - {{date}}</code>
+            <strong>📌 Subject:</strong> <code id="emailSubjectPreview">🍽️ My Cooking Log - —</code>
         </div>
+
         <div class="email-option-card">
-            <div class="header"><span class="icon">🎨</span><span class="title">HTML Formatting</span><span class="badge">Best Visual</span></div>
-            <div class="description">Beautiful formatted email with colors and tables.</div>
-            <button class="action-btn html-btn" id="htmlOptionBtn">📋 Copy HTML</button>
-        </div>
-        <div class="email-option-card">
-            <div class="header"><span class="icon">📄</span><span class="title">Plain Text</span><span class="badge">Universal</span></div>
-            <div class="description">Clean plain text email.</div>
-            <button class="action-btn plain-btn" id="plainOptionBtn">📧 Open Email</button>
-        </div>
-        <div class="email-option-card">
-            <div class="header"><span class="icon">🔄</span><span class="title">Copy HTML for Outlook</span><span class="badge">Recommended</span></div>
-            <div class="description">Copies HTML for pasting into Outlook.</div>
-            <button class="action-btn html-btn" id="hybridOptionBtn">📋 Copy HTML</button>
-        </div>
-        <div class="email-option-card">
-            <div class="header"><span class="icon">📧</span><span class="title">Open Email Client</span><span class="badge">Quick</span></div>
-            <div class="description">Opens your email client with content pre-filled.</div>
+            <div class="header"><span class="icon">📧</span><span class="title">Open in Default Mail App</span><span class="badge">Plain Text</span></div>
+            <div class="description">Opens your default mail app with a plain-text version of the log and the subject pre-filled.</div>
             <button class="action-btn plain-btn" id="openOptionBtn">📧 Open Email</button>
+        </div>
+
+        <div class="email-option-card">
+            <div class="header"><span class="icon">💕</span><span class="title">Copy HTML</span><span class="badge">Best Visual</span></div>
+            <div class="description">Copies the full romantic HTML log to your clipboard. Paste it into Gmail, Outlook, or any email service.</div>
+            <button class="action-btn html-btn" id="htmlOptionBtn">💕 Copy HTML</button>
         </div>
     </div>
 </div>
@@ -1403,9 +1360,9 @@
             <button class="wa-send" id="waSendBtn" disabled>💬 Open WhatsApp</button>
         </div>
         <div class="wa-hint">
-            ✨ Tap a <strong>saved recipient</strong> to send instantly.<br>
+            ✨ Tap a <strong>saved recipient</strong> to send.<br>
             ✨ <strong>Last used number</strong> is auto-remembered.<br>
-            💕 Sends only the <strong>latest picked dish</strong> — history is not cleared.
+            💕 Sends only the <strong>latest picked dish</strong> — history is preserved.
         </div>
     </div>
 </div>
@@ -1438,11 +1395,8 @@
     let history = [];
     let picked = [];
     let selectedForDelete = new Set();
-
-    // Currently displayed dish (for WhatsApp)
     let currentlyDisplayedDish = null;
 
-    // WhatsApp recipients
     const LS_SAVED_RECIPIENTS = 'dishPicker_savedRecipients';
     const LS_LAST_USED_NUMBER = 'dishPicker_lastUsedNumber';
     let savedRecipients = [];
@@ -1500,7 +1454,6 @@
     const customDateRow = document.getElementById('customDateRow');
     const customDateInput = document.getElementById('customDateInput');
     const customDatePreview = document.getElementById('customDatePreview');
-    const customLabel = document.getElementById('customLabel');
 
     const historyDeleteModal = document.getElementById('historyDeleteModal');
     const historyDeletePassword = document.getElementById('historyDeletePassword');
@@ -1528,11 +1481,9 @@
     const emailOptionsModal = document.getElementById('emailOptionsModal');
     const emailOptionsClose = document.getElementById('emailOptionsClose');
     const htmlOptionBtn = document.getElementById('htmlOptionBtn');
-    const plainOptionBtn = document.getElementById('plainOptionBtn');
-    const hybridOptionBtn = document.getElementById('hybridOptionBtn');
     const openOptionBtn = document.getElementById('openOptionBtn');
+    const emailSubjectPreview = document.getElementById('emailSubjectPreview');
 
-    // WhatsApp DOM
     const waModal = document.getElementById('waModal');
     const waRecipients = document.getElementById('waRecipients');
     const waAddNewToggle = document.getElementById('waAddNewToggle');
@@ -1576,141 +1527,7 @@
     setInterval(updateLastSyncInfo, 5000);
 
     // ============================================================
-    // RECIPIENT STORAGE
-    // ============================================================
-    function loadRecipients() {
-        try {
-            const raw = localStorage.getItem(LS_SAVED_RECIPIENTS);
-            savedRecipients = raw ? JSON.parse(raw) : [];
-            if (!Array.isArray(savedRecipients)) savedRecipients = [];
-        } catch (e) { savedRecipients = []; }
-        try {
-            lastUsedNumber = localStorage.getItem(LS_LAST_USED_NUMBER) || '';
-        } catch (e) { lastUsedNumber = ''; }
-    }
-    function saveRecipients() {
-        try { localStorage.setItem(LS_SAVED_RECIPIENTS, JSON.stringify(savedRecipients)); } catch (e) {}
-    }
-    function saveLastUsed(number) {
-        try {
-            lastUsedNumber = number;
-            localStorage.setItem(LS_LAST_USED_NUMBER, number);
-        } catch (e) {}
-    }
-    function addRecipient(name, number) {
-        number = (number || '').replace(/\D/g, '');
-        name = (name || '').trim();
-        if (!name) { showToast('⚠️ Enter a name.', 2000); return false; }
-        if (!number || number.length < 8) { showToast('⚠️ Enter a valid number.', 2500); return false; }
-        if (savedRecipients.some(r => r.number === number)) {
-            showToast('⚠️ This number is already saved.', 2500);
-            return false;
-        }
-        savedRecipients.push({ name, number });
-        saveRecipients();
-        renderRecipients();
-        showToast(`💾 Saved: ${name}`, 2000);
-        return true;
-    }
-    function removeRecipient(number) {
-        savedRecipients = savedRecipients.filter(r => r.number !== number);
-        saveRecipients();
-        if (selectedRecipient && selectedRecipient.number === number) {
-            selectedRecipient = null;
-        }
-        renderRecipients();
-        updateSendButtonState();
-        showToast('🗑️ Removed', 1500);
-    }
-    function renderRecipients() {
-        if (!waRecipients) return;
-        waRecipients.innerHTML = '';
-
-        if (savedRecipients.length === 0 && !lastUsedNumber) {
-            const empty = document.createElement('div');
-            empty.className = 'wa-empty-recipients';
-            empty.textContent = '💭 No saved recipients yet. Tap "➕ Add new" to save one.';
-            waRecipients.appendChild(empty);
-            return;
-        }
-
-        if (lastUsedNumber && !savedRecipients.some(r => r.number === lastUsedNumber)) {
-            const lastRow = document.createElement('div');
-            lastRow.className = 'wa-recipient';
-            lastRow.dataset.number = lastUsedNumber;
-            lastRow.innerHTML = `
-                <div class="wa-avatar">🕐</div>
-                <div class="wa-info">
-                    <div class="wa-name">Last used</div>
-                    <div class="wa-number">+${lastUsedNumber}</div>
-                </div>
-            `;
-            lastRow.addEventListener('click', () => {
-                selectedRecipient = { name: 'Last used', number: lastUsedNumber };
-                renderRecipients();
-                updateSendButtonState();
-            });
-            if (selectedRecipient && selectedRecipient.number === lastUsedNumber) {
-                lastRow.classList.add('selected');
-            }
-            waRecipients.appendChild(lastRow);
-        }
-
-        savedRecipients.forEach(r => {
-            const row = document.createElement('div');
-            row.className = 'wa-recipient';
-            row.dataset.number = r.number;
-
-            const avatar = document.createElement('div');
-            avatar.className = 'wa-avatar';
-            avatar.textContent = r.name.charAt(0).toUpperCase() || '?';
-
-            const info = document.createElement('div');
-            info.className = 'wa-info';
-            const nameEl = document.createElement('div');
-            nameEl.className = 'wa-name';
-            nameEl.textContent = r.name;
-            const numEl = document.createElement('div');
-            numEl.className = 'wa-number';
-            numEl.textContent = '+' + r.number;
-            info.appendChild(nameEl);
-            info.appendChild(numEl);
-
-            const removeBtn = document.createElement('button');
-            removeBtn.className = 'wa-remove';
-            removeBtn.textContent = '×';
-            removeBtn.title = 'Remove';
-            removeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (confirm(`Remove "${r.name}" from saved recipients?`)) {
-                    removeRecipient(r.number);
-                }
-            });
-
-            row.appendChild(avatar);
-            row.appendChild(info);
-            row.appendChild(removeBtn);
-
-            row.addEventListener('click', () => {
-                selectedRecipient = { name: r.name, number: r.number };
-                renderRecipients();
-                updateSendButtonState();
-            });
-
-            if (selectedRecipient && selectedRecipient.number === r.number) {
-                row.classList.add('selected');
-            }
-
-            waRecipients.appendChild(row);
-        });
-    }
-    function updateSendButtonState() {
-        if (!waSendBtn) return;
-        waSendBtn.disabled = !selectedRecipient;
-    }
-
-    // ============================================================
-    // FULL CLOUD SYNC
+    // CLOUD SYNC
     // ============================================================
     async function pushAllToCloud() {
         if (!supabaseClient) return false;
@@ -1813,19 +1630,14 @@
         ALL_DISHES = pulled.dishes;
         history = pulled.history;
         picked = pulled.picked;
-        // Update currently displayed dish to latest history entry
         if (history.length > 0) {
             const latest = history[history.length - 1];
             currentlyDisplayedDish = {
                 dish: latest.dish,
                 category: latest.category,
-                dateTag: latest.dateTag,
-                date: latest.displayDate
+                dateTag: latest.dateTag
             };
             updatePopup(latest.dish, latest.category, latest.dateTag);
-        } else {
-            currentlyDisplayedDish = null;
-            updatePopup(null, null, null);
         }
         lastSyncTime = Date.now();
         setSyncStatus('online', '☁️ synced');
@@ -1848,14 +1660,12 @@
                     ALL_DISHES = pulled.dishes;
                     history = pulled.history;
                     picked = pulled.picked;
-                    // Update displayed dish
                     if (history.length > 0) {
                         const latest = history[history.length - 1];
                         currentlyDisplayedDish = {
                             dish: latest.dish,
                             category: latest.category,
-                            dateTag: latest.dateTag,
-                            date: latest.displayDate
+                            dateTag: latest.dateTag
                         };
                         updatePopup(latest.dish, latest.category, latest.dateTag);
                     }
@@ -2040,6 +1850,116 @@
     }
 
     // ============================================================
+    // RECIPIENTS (WHATSAPP)
+    // ============================================================
+    function loadRecipients() {
+        try {
+            const raw = localStorage.getItem(LS_SAVED_RECIPIENTS);
+            savedRecipients = raw ? JSON.parse(raw) : [];
+            if (!Array.isArray(savedRecipients)) savedRecipients = [];
+        } catch (e) { savedRecipients = []; }
+        try {
+            lastUsedNumber = localStorage.getItem(LS_LAST_USED_NUMBER) || '';
+        } catch (e) { lastUsedNumber = ''; }
+    }
+    function saveRecipients() {
+        try { localStorage.setItem(LS_SAVED_RECIPIENTS, JSON.stringify(savedRecipients)); } catch (e) {}
+    }
+    function saveLastUsed(n) {
+        try { lastUsedNumber = n; localStorage.setItem(LS_LAST_USED_NUMBER, n); } catch (e) {}
+    }
+    function addRecipient(name, number) {
+        number = (number || '').replace(/\D/g, '');
+        name = (name || '').trim();
+        if (!name) { showToast('⚠️ Enter a name.', 2000); return false; }
+        if (!number || number.length < 8) { showToast('⚠️ Enter a valid number.', 2500); return false; }
+        if (savedRecipients.some(r => r.number === number)) {
+            showToast('⚠️ This number is already saved.', 2500);
+            return false;
+        }
+        savedRecipients.push({ name, number });
+        saveRecipients();
+        renderRecipients();
+        showToast(`💾 Saved: ${name}`, 2000);
+        return true;
+    }
+    function removeRecipient(number) {
+        savedRecipients = savedRecipients.filter(r => r.number !== number);
+        saveRecipients();
+        if (selectedRecipient && selectedRecipient.number === number) selectedRecipient = null;
+        renderRecipients();
+        updateSendButtonState();
+        showToast('🗑️ Removed', 1500);
+    }
+    function renderRecipients() {
+        if (!waRecipients) return;
+        waRecipients.innerHTML = '';
+        if (savedRecipients.length === 0 && !lastUsedNumber) {
+            const empty = document.createElement('div');
+            empty.className = 'wa-empty-recipients';
+            empty.textContent = '💭 No saved recipients yet. Tap "➕ Add new" to save one.';
+            waRecipients.appendChild(empty);
+            return;
+        }
+        if (lastUsedNumber && !savedRecipients.some(r => r.number === lastUsedNumber)) {
+            const lastRow = document.createElement('div');
+            lastRow.className = 'wa-recipient';
+            lastRow.innerHTML = `
+                <div class="wa-avatar">🕐</div>
+                <div class="wa-info">
+                    <div class="wa-name">Last used</div>
+                    <div class="wa-number">+${lastUsedNumber}</div>
+                </div>
+            `;
+            lastRow.addEventListener('click', () => {
+                selectedRecipient = { name: 'Last used', number: lastUsedNumber };
+                renderRecipients();
+                updateSendButtonState();
+            });
+            if (selectedRecipient && selectedRecipient.number === lastUsedNumber) lastRow.classList.add('selected');
+            waRecipients.appendChild(lastRow);
+        }
+        savedRecipients.forEach(r => {
+            const row = document.createElement('div');
+            row.className = 'wa-recipient';
+            const avatar = document.createElement('div');
+            avatar.className = 'wa-avatar';
+            avatar.textContent = r.name.charAt(0).toUpperCase() || '?';
+            const info = document.createElement('div');
+            info.className = 'wa-info';
+            const nameEl = document.createElement('div');
+            nameEl.className = 'wa-name';
+            nameEl.textContent = r.name;
+            const numEl = document.createElement('div');
+            numEl.className = 'wa-number';
+            numEl.textContent = '+' + r.number;
+            info.appendChild(nameEl);
+            info.appendChild(numEl);
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'wa-remove';
+            removeBtn.textContent = '×';
+            removeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (confirm(`Remove "${r.name}" from saved recipients?`)) removeRecipient(r.number);
+            });
+            row.appendChild(avatar);
+            row.appendChild(info);
+            row.appendChild(removeBtn);
+            row.addEventListener('click', () => {
+                selectedRecipient = { name: r.name, number: r.number };
+                renderRecipients();
+                updateSendButtonState();
+            });
+            if (selectedRecipient && selectedRecipient.number === r.number) row.classList.add('selected');
+            waRecipients.appendChild(row);
+        });
+    }
+    function updateSendButtonState() {
+        if (!waSendBtn) return;
+        waSendBtn.disabled = !selectedRecipient;
+    }
+
+    // ============================================================
     // MANUAL ADD
     // ============================================================
     function openManualAddModal() {
@@ -2107,8 +2027,7 @@
         currentlyDisplayedDish = {
             dish: dishName,
             category: category,
-            dateTag: dateTag,
-            date: getFormattedDate(dateObj)
+            dateTag: dateTag
         };
         updatePopup(dishName, category, dateTag);
         if (!picked.includes(dishName)) picked.push(dishName);
@@ -2183,7 +2102,6 @@
                 history.splice(historyEntryToDelete, 1);
                 const p = picked.indexOf(dishName);
                 if (p !== -1) picked.splice(p, 1);
-                // If deleted the currently displayed dish, clear popup
                 if (currentlyDisplayedDish && currentlyDisplayedDish.dish === dishName) {
                     currentlyDisplayedDish = null;
                     updatePopup(null, null, null);
@@ -2496,13 +2414,7 @@
         if (ALL_DISHES.length === 0) { showToast('📭 No dishes yet.', 2500); return; }
         if (getAvailableDishes().length === 0) { showToast('🎉 All picked! Reset first.', 2500); return; }
         const todayRadio = document.querySelector('input[name="dishDate"][value="today"]');
-        const tomorrowRadio = document.querySelector('input[name="dishDate"][value="tomorrow"]');
-        const yesterdayRadio = document.querySelector('input[name="dishDate"][value="yesterday"]');
-        const customRadio = document.querySelector('input[name="dishDate"][value="custom"]');
         if (todayRadio) todayRadio.checked = true;
-        if (tomorrowRadio) tomorrowRadio.checked = false;
-        if (yesterdayRadio) yesterdayRadio.checked = false;
-        if (customRadio) customRadio.checked = false;
         document.querySelectorAll('.date-option label').forEach(l => l.classList.remove('selected'));
         const tl = document.getElementById('todayLabel');
         if (tl) tl.classList.add('selected');
@@ -2537,8 +2449,7 @@
                 currentlyDisplayedDish = {
                     dish: result.dish.name,
                     category: result.dish.category,
-                    dateTag: result.dateTag,
-                    date: getFormattedDate(result.dateObj)
+                    dateTag: result.dateTag
                 };
                 updatePopup(result.dish.name, result.dish.category, result.dateTag);
                 updateUI();
@@ -2804,25 +2715,11 @@
         return b;
     }
 
+    // ── ONLY 2 EMAIL ACTIONS NOW ──
     function optionHTML() {
         if (history.length === 0) { showToast('📭 No history!', 2500); return; }
         const full = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>${generateFullHTMLEmail()}</body></html>`;
-        copyToClipboard(full, '🎨 HTML copied!');
-    }
-
-    function optionPlain() {
-        if (history.length === 0) { showToast('📭 No history!', 2500); return; }
-        const sub = encodeURIComponent(getSubjectLine());
-        const body = encodeURIComponent(generatePlainTextEmail());
-        window.location.href = `mailto:?subject=${sub}&body=${body}`;
-        showToast('📧 Email opened!', 2500);
-        closeEmailOptions();
-    }
-
-    function optionHybrid() {
-        if (history.length === 0) { showToast('📭 No history!', 2500); return; }
-        const full = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>${generateFullHTMLEmail()}</body></html>`;
-        copyToClipboard(full, '🔄 HTML copied!');
+        copyToClipboard(full, '🎨 HTML copied! Paste it in your email client.');
     }
 
     function optionOpen() {
@@ -2830,7 +2727,7 @@
         const sub = encodeURIComponent(getSubjectLine());
         const body = encodeURIComponent(generatePlainTextEmail());
         window.location.href = `mailto:?subject=${sub}&body=${body}`;
-        showToast('📧 Email opened!', 2500);
+        showToast('📧 Opening your email app...', 2500);
         closeEmailOptions();
     }
 
@@ -2860,6 +2757,7 @@
 
     function openEmailOptions() {
         if (history.length === 0) { showToast('📭 No history!', 2500); return; }
+        if (emailSubjectPreview) emailSubjectPreview.textContent = getSubjectLine();
         emailOptionsModal.classList.add('active');
         document.body.style.overflow = 'hidden';
     }
@@ -2928,10 +2826,9 @@
     }
 
     // ============================================================
-    // WHATSAPP — build, open, send
+    // WHATSAPP
     // ============================================================
     function buildWhatsAppMessage() {
-        // Prefer the currently displayed dish; fallback to latest history
         let dishName = currentlyDisplayedDish ? currentlyDisplayedDish.dish : null;
         let category = currentlyDisplayedDish ? currentlyDisplayedDish.category : null;
         let dateTag = currentlyDisplayedDish ? currentlyDisplayedDish.dateTag : null;
@@ -2944,7 +2841,6 @@
             dateTag = latest.dateTag;
             cook = latest.cook || '';
         } else if (currentlyDisplayedDish) {
-            // Find cook from the matching history entry (latest match)
             for (let i = history.length - 1; i >= 0; i--) {
                 if (history[i].dish === dishName) {
                     cook = history[i].cook || '';
@@ -2978,7 +2874,7 @@
         }
 
         msg += `\n━━━━━━━━━━━━━━━━━━━━\n`;
-        msg += `💕 *Chosen with love by DeepNectar.* 💕`;
+        msg += `💕 *Made with love by Honey for Shinu* 💕`;
         return msg;
     }
 
@@ -3057,14 +2953,12 @@
         loadRecipients();
         ALL_DISHES = ALL_DISHES.map(d => typeof d === 'string' ? { name: d, category: 'Uncategorized' } : d);
 
-        // Set currently displayed from latest history
         if (history.length > 0) {
             const latest = history[history.length - 1];
             currentlyDisplayedDish = {
                 dish: latest.dish,
                 category: latest.category,
-                dateTag: latest.dateTag,
-                date: latest.displayDate
+                dateTag: latest.dateTag
             };
             updatePopup(latest.dish, latest.category, latest.dateTag);
         } else {
@@ -3087,8 +2981,7 @@
                     currentlyDisplayedDish = {
                         dish: latest.dish,
                         category: latest.category,
-                        dateTag: latest.dateTag,
-                        date: latest.displayDate
+                        dateTag: latest.dateTag
                     };
                     updatePopup(latest.dish, latest.category, latest.dateTag);
                 }
@@ -3163,12 +3056,9 @@
 
         if (emailOptionsClose) emailOptionsClose.addEventListener('click', closeEmailOptions);
         if (htmlOptionBtn) htmlOptionBtn.addEventListener('click', optionHTML);
-        if (plainOptionBtn) plainOptionBtn.addEventListener('click', optionPlain);
-        if (hybridOptionBtn) hybridOptionBtn.addEventListener('click', optionHybrid);
         if (openOptionBtn) openOptionBtn.addEventListener('click', optionOpen);
         if (emailOptionsModal) emailOptionsModal.addEventListener('click', (e) => { if (e.target === emailOptionsModal) closeEmailOptions(); });
 
-        // WhatsApp modal
         if (waCancelBtn) waCancelBtn.addEventListener('click', closeWhatsAppModal);
         if (waSendBtn) waSendBtn.addEventListener('click', sendWhatsApp);
         if (waModal) waModal.addEventListener('click', (e) => { if (e.target === waModal) closeWhatsAppModal(); });
@@ -3226,8 +3116,7 @@
                             currentlyDisplayedDish = {
                                 dish: latest.dish,
                                 category: latest.category,
-                                dateTag: latest.dateTag,
-                                date: latest.displayDate
+                                dateTag: latest.dateTag
                             };
                             updatePopup(latest.dish, latest.category, latest.dateTag);
                         }
