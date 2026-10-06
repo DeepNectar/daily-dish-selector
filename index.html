@@ -152,6 +152,8 @@
     <div class="modal">
         <h3>🗑️ Clear All History</h3>
         <p>This will delete all cooking history and reset all dishes to available.<br><strong>Also cleared from the cloud!</strong></p>
+        <input type="password" id="clearHistoryPassword" placeholder="Enter password" autocomplete="off">
+        <div class="error-text" id="clearHistoryError">❌ Incorrect password</div>
         <div class="modal-buttons">
             <button class="modal-cancel" id="clearHistoryCancel">Cancel</button>
             <button class="modal-confirm" id="clearHistoryConfirm">Yes, Clear All</button>
@@ -166,6 +168,8 @@
         <p>Are you sure you want to delete the following dishes?</p>
         <div class="bulk-delete-count" id="bulkDeleteCount">0</div>
         <p style="font-size:0.85rem; color:#7a5f47;" id="bulkDeleteList"></p>
+        <input type="password" id="bulkDeletePassword" placeholder="Enter password" autocomplete="off">
+        <div class="error-text" id="bulkDeleteError">❌ Incorrect password</div>
         <div class="modal-buttons">
             <button class="modal-cancel" id="bulkDeleteCancel">Cancel</button>
             <button class="modal-confirm" id="bulkDeleteConfirm">🗑️ Delete All</button>
