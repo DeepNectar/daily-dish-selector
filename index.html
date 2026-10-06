@@ -4,90 +4,111 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="Dish Picker — pick today's dish, cloud synced across devices.">
-    <meta name="theme-color" content="#fcf6f0">
+    <meta name="theme-color" content="#faf5ef" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#17120d" media="(prefers-color-scheme: dark)">
     <!-- Mobile web app capability -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="format-detection" content="telephone=no">
     <title>🍽️ Dish Picker · Cloud Synced</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div class="card" role="main">
-    <h2><span>🍽️</span> today's dish</h2>
-    <div class="sub">cloud synced · all data saved · click refresh to pick</div>
-
-    <div class="status-badge" id="statusBadge">
-        🔁 0 / 0 picked
-        <span class="sync-badge" id="syncBadge">🔄 connecting...</span>
-        <span class="delete-mode-indicator inactive" id="deleteIndicator">🔒 locked</span>
-    </div>
-
-    <div class="category-section">
-        <label for="categorySelect">📂 Category:</label>
-        <select class="category-select" id="categorySelect">
-            <option value="__all__">📋 All Categories</option>
-        </select>
-        <span class="category-count" id="categoryCount">0 dishes</span>
-    </div>
-
-    <div class="add-section">
-        <input type="text" id="newDishInput" placeholder="e.g. 🧅🍅 Sev Tamatar Nu Shak" maxlength="80">
-        <input type="text" id="newCategoryInput" placeholder="Category (e.g. Roti + Chaas)" maxlength="60">
-        <button class="btn-add" id="addDishBtn">➕ add dish</button>
-    </div>
-
-    <div class="bulk-section">
-        <label for="bulkFileInput">📂 Import Excel/CSV</label>
-        <input type="file" id="bulkFileInput" accept=".csv,.xlsx,.xls">
-        <button class="bulk-btn export-excel-btn" id="exportExcelBtn">📤 Export CSV</button>
-        <span class="bulk-hint">Format: "Dish Name, Category" · saved to cloud automatically</span>
-    </div>
-
-    <div class="list-container">
-        <div class="list-header" id="listHeader">
-            <div class="select-all-container" id="selectAllContainer" style="display:none;">
-                <input type="checkbox" id="selectAllCheckbox">
-                <label for="selectAllCheckbox">Select All</label>
-                <span id="selectedCount" style="font-size:0.8rem; color:#7a5f47;">(0 selected)</span>
+<div class="app-shell" role="main">
+    <header class="app-header">
+        <div class="brand">
+            <span class="brand-icon">🍽️</span>
+            <div class="brand-text">
+                <h2>Today's Dish</h2>
+                <p class="tagline">Cloud synced across devices</p>
             </div>
-            <button class="bulk-delete-btn" id="bulkDeleteBtn">🗑️ Delete Selected</button>
         </div>
-        <div class="item-grid" id="itemList"></div>
-    </div>
-
-    <div class="popup-area">
-        <div class="popup-display" id="popupDisplay">
-            <span class="popup-empty">✨ click refresh to pick a dish</span>
+        <div class="header-badges">
+            <span class="chip chip-dark" id="statusBadge">🔁 0 / 0 picked</span>
+            <span class="chip chip-sync" id="syncBadge">🔄 connecting…</span>
+            <span class="chip chip-lock inactive" id="deleteIndicator">🔒 Locked</span>
         </div>
-    </div>
+    </header>
 
-    <div class="btn-group">
-        <button class="btn btn-primary" id="refreshBtn"><i>⟳</i> refresh</button>
-        <button class="btn btn-outline" id="resetBtn"><i>↺</i> reset all</button>
-        <button class="btn btn-clear" id="clearHistoryBtn"><i>🗑️</i> clear history</button>
-        <button class="btn btn-email" id="emailBtn"><i>✉</i> email</button>
-        <button class="btn btn-whatsapp" id="whatsappBtn"><i>💬</i> whatsapp</button>
-        <button class="btn btn-danger" id="deleteModeBtn"><i>🔒</i> delete mode</button>
-        <button class="btn btn-outline" id="manualAddBtn"><i>✍️</i> add manually</button>
-        <button class="btn btn-sync" id="syncBtn"><i>🔄</i> force sync</button>
-    </div>
+    <section class="panel">
+        <div class="panel-title-row">
+            <h3 class="panel-title">🎲 Pick a dish</h3>
+            <span class="count-pill" id="categoryCount">0 dishes</span>
+        </div>
+        <div class="pick-controls">
+            <select class="category-select" id="categorySelect" aria-label="Filter by category">
+                <option value="__all__">📋 All Categories</option>
+            </select>
+            <button class="btn btn-primary" id="refreshBtn"><i>⟳</i> Refresh</button>
+            <button class="btn btn-outline" id="resetBtn"><i>↺</i> Reset All</button>
+        </div>
 
-    <div class="reset-notice" id="resetNotice">add some dishes to get started!</div>
+        <div class="popup-area">
+            <div class="popup-display" id="popupDisplay">
+                <span class="popup-empty">✨ Tap refresh to pick today's dish</span>
+            </div>
+        </div>
+    </section>
 
-    <div class="history-section">
-        <h3>📜 cooking history <span style="font-size:0.8rem; color:#7a5f47;">(click tags · 🗑️ to delete)</span></h3>
+    <nav class="action-bar" aria-label="Quick actions">
+        <button class="action-tile action-share" id="emailBtn"><span class="tile-icon">✉️</span>Email</button>
+        <button class="action-tile action-wa" id="whatsappBtn"><span class="tile-icon">💬</span>WhatsApp</button>
+        <button class="action-tile action-manual" id="manualAddBtn"><span class="tile-icon">✍️</span>Add Manually</button>
+        <button class="action-tile action-sync" id="syncBtn"><span class="tile-icon">🔄</span>Force Sync</button>
+        <button class="action-tile action-clear" id="clearHistoryBtn"><span class="tile-icon">🗑️</span>Clear History</button>
+        <button class="action-tile action-danger" id="deleteModeBtn"><span class="tile-icon">🔒</span>Delete Mode</button>
+    </nav>
+
+    <section class="panel manage-panel">
+        <details class="manage-details">
+            <summary>🛠️ Manage menu — add, import &amp; view dishes</summary>
+            <div class="manage-body">
+                <div class="add-section">
+                    <input type="text" id="newDishInput" placeholder="e.g. 🧅🍅 Sev Tamatar Nu Shak" maxlength="80">
+                    <input type="text" id="newCategoryInput" placeholder="Category (e.g. Roti + Chaas)" maxlength="60">
+                    <button class="btn-add" id="addDishBtn">➕ Add Dish</button>
+                </div>
+
+                <div class="bulk-section">
+                    <label for="bulkFileInput">📂 Import Excel/CSV</label>
+                    <input type="file" id="bulkFileInput" accept=".csv,.xlsx,.xls">
+                    <button class="bulk-btn export-excel-btn" id="exportExcelBtn">📤 Export CSV</button>
+                    <span class="bulk-hint">Format: "Dish Name, Category" · saved to cloud automatically</span>
+                </div>
+
+                <div class="list-container">
+                    <div class="list-header" id="listHeader">
+                        <div class="select-all-container" id="selectAllContainer" style="display:none;">
+                            <input type="checkbox" id="selectAllCheckbox">
+                            <label for="selectAllCheckbox">Select All</label>
+                            <span id="selectedCount">(0 selected)</span>
+                        </div>
+                        <button class="bulk-delete-btn" id="bulkDeleteBtn">🗑️ Delete Selected</button>
+                    </div>
+                    <div class="item-grid" id="itemList"></div>
+                </div>
+            </div>
+        </details>
+    </section>
+
+    <div class="reset-notice" id="resetNotice">Add some dishes to get started!</div>
+
+    <section class="history-section">
+        <h3>📜 Cooking History <span class="history-hint">(tap tags · 🗑️ to delete)</span></h3>
         <div class="history-list" id="historyList">
-            <div class="history-empty">no dishes made yet</div>
+            <div class="history-empty">No dishes made yet</div>
         </div>
-    </div>
+    </section>
 
-    <div class="footer-meta">
+    <footer class="footer-meta">
         <span id="remainingCount">📋 0 remaining</span>
         <span id="historyCount">📚 0 total made</span>
         <span id="lastSyncInfo">🔄 never synced</span>
-    </div>
+    </footer>
 </div>
 
 <!-- Category Selection Modal -->

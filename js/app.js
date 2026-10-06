@@ -137,7 +137,7 @@
 
     function setSyncStatus(status, message) {
         if (!syncBadge) return;
-        syncBadge.className = 'sync-badge ' + status;
+        syncBadge.className = 'chip chip-sync ' + status;
         syncBadge.textContent = message;
     }
 
@@ -360,12 +360,14 @@
 
     function updateDeleteIndicator() {
         if (deleteIndicator) {
-            deleteIndicator.className = deleteMode ? 'delete-mode-indicator active' : 'delete-mode-indicator inactive';
-            deleteIndicator.textContent = deleteMode ? '🔓 unlocked' : '🔒 locked';
+            deleteIndicator.className = 'chip chip-lock ' + (deleteMode ? 'active' : 'inactive');
+            deleteIndicator.textContent = deleteMode ? '🔓 Unlocked' : '🔒 Locked';
         }
         if (deleteModeBtn) {
-            deleteModeBtn.innerHTML = deleteMode ? '<i>🔓</i> delete mode (active)' : '<i>🔒</i> delete mode';
-            deleteModeBtn.style.background = deleteMode ? '#27ae60' : '#c0392b';
+            deleteModeBtn.innerHTML = deleteMode
+                ? '<span class="tile-icon">🔓</span>Delete Mode ✓'
+                : '<span class="tile-icon">🔒</span>Delete Mode';
+            deleteModeBtn.classList.toggle('active', deleteMode);
         }
         if (selectAllContainer) selectAllContainer.style.display = deleteMode ? 'flex' : 'none';
         if (!deleteMode) selectedForDelete.clear();
@@ -1030,7 +1032,7 @@
         }
         popupDisplay.innerHTML = '';
         const wrap = document.createElement('span');
-        wrap.style.cssText = 'display:inline-flex;align-items:center;gap:0.8rem;flex-wrap:wrap;justify-content:center;';
+        wrap.style.cssText = 'display:inline-flex;align-items:center;gap:0.55rem;flex-wrap:wrap;justify-content:center;';
         const icon = document.createElement('span');
         icon.className = 'popup-icon';
         icon.textContent = '🍽️';
