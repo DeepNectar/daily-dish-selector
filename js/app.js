@@ -14,7 +14,7 @@
         console.error('Supabase init failed:', e);
     }
 
-    const PASSWORD = "Deepnectar@1612@";
+    const PASSWORD = "DeepH@2805";
     let deleteMode = false;
 
     let ALL_DISHES = [];
@@ -98,10 +98,14 @@
     const clearHistoryModal = document.getElementById('clearHistoryModal');
     const clearHistoryConfirm = document.getElementById('clearHistoryConfirm');
     const clearHistoryCancel = document.getElementById('clearHistoryCancel');
+    const clearHistoryPassword = document.getElementById('clearHistoryPassword');
+    const clearHistoryError = document.getElementById('clearHistoryError');
 
     const bulkDeleteModal = document.getElementById('bulkDeleteModal');
     const bulkDeleteConfirm = document.getElementById('bulkDeleteConfirm');
     const bulkDeleteCancel = document.getElementById('bulkDeleteCancel');
+    const bulkDeletePassword = document.getElementById('bulkDeletePassword');
+    const bulkDeleteError = document.getElementById('bulkDeleteError');
     const bulkDeleteCount = document.getElementById('bulkDeleteCount');
     const bulkDeleteList = document.getElementById('bulkDeleteList');
 
@@ -445,12 +449,28 @@
         const names = Array.from(selectedForDelete);
         bulkDeleteCount.textContent = `${names.length} dish(es)`;
         bulkDeleteList.textContent = names.slice(0, 10).join(', ') + (names.length > 10 ? ` and ${names.length - 10} more...` : '');
+        if (bulkDeletePassword) bulkDeletePassword.value = '';
+        if (bulkDeleteError) bulkDeleteError.classList.remove('show');
         bulkDeleteModal.classList.add('active');
+        if (bulkDeletePassword) bulkDeletePassword.focus();
+    }
+
+    function closeBulkDeleteModal() {
+        bulkDeleteModal.classList.remove('active');
+        if (bulkDeletePassword) bulkDeletePassword.value = '';
+        if (bulkDeleteError) bulkDeleteError.classList.remove('show');
     }
 
     async function confirmBulkDelete() {
         const toDelete = Array.from(selectedForDelete);
-        if (toDelete.length === 0) { bulkDeleteModal.classList.remove('active'); return; }
+        if (toDelete.length === 0) { closeBulkDeleteModal(); return; }
+        if (bulkDeletePassword && bulkDeletePassword.value !== PASSWORD) {
+            if (bulkDeleteError) bulkDeleteError.classList.add('show');
+            bulkDeletePassword.value = '';
+            bulkDeletePassword.focus();
+            setTimeout(() => bulkDeleteError && bulkDeleteError.classList.remove('show'), 3000);
+            return;
+        }
         toDelete.forEach(name => {
             const i = ALL_DISHES.findIndex(d => d.name === name);
             if (i !== -1) ALL_DISHES.splice(i, 1);
@@ -458,7 +478,7 @@
             if (p !== -1) picked.splice(p, 1);
         });
         selectedForDelete.clear();
-        bulkDeleteModal.classList.remove('active');
+        closeBulkDeleteModal();
         updateUI();
         showToast(`🗑️ Deleted ${toDelete.length} dish(es)!`, 2500);
         await pushAllToCloud();
@@ -1146,17 +1166,33 @@
 
     function handleClearHistory() {
         if (history.length === 0) { showToast('📭 No history to clear!', 2000); return; }
+        if (clearHistoryPassword) clearHistoryPassword.value = '';
+        if (clearHistoryError) clearHistoryError.classList.remove('show');
         clearHistoryModal.classList.add('active');
+        if (clearHistoryPassword) clearHistoryPassword.focus();
+    }
+
+    function closeClearHistoryModal() {
+        clearHistoryModal.classList.remove('active');
+        if (clearHistoryPassword) clearHistoryPassword.value = '';
+        if (clearHistoryError) clearHistoryError.classList.remove('show');
     }
 
     async function confirmClearHistory() {
+        if (clearHistoryPassword && clearHistoryPassword.value !== PASSWORD) {
+            if (clearHistoryError) clearHistoryError.classList.add('show');
+            clearHistoryPassword.value = '';
+            clearHistoryPassword.focus();
+            setTimeout(() => clearHistoryError && clearHistoryError.classList.remove('show'), 3000);
+            return;
+        }
         history = [];
         picked = [];
         selectedForDelete.clear();
         currentlyDisplayedDish = null;
         updatePopup(null, null, null);
         updateUI();
-        clearHistoryModal.classList.remove('active');
+        closeClearHistoryModal();
         showToast('🗑️ All history cleared! (also from cloud)', 2500);
         await pushAllToCloud();
     }
@@ -1708,8 +1744,12 @@
 
         if (bulkDeleteBtn) bulkDeleteBtn.addEventListener('click', showBulkDeleteModal);
         if (bulkDeleteConfirm) bulkDeleteConfirm.addEventListener('click', confirmBulkDelete);
-        if (bulkDeleteCancel) bulkDeleteCancel.addEventListener('click', () => bulkDeleteModal.classList.remove('active'));
-        if (bulkDeleteModal) bulkDeleteModal.addEventListener('click', (e) => { if (e.target === bulkDeleteModal) bulkDeleteModal.classList.remove('active'); });
+        if (bulkDeleteCancel) bulkDeleteCancel.addEventListener('click', closeBulkDeleteModal);
+        if (bulkDeleteModal) bulkDeleteModal.addEventListener('click', (e) => { if (e.target === bulkDeleteModal) closeBulkDeleteModal(); });
+        if (bulkDeletePassword) bulkDeletePassword.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); confirmBulkDelete(); }
+            if (e.key === 'Escape') closeBulkDeleteModal();
+        });
 
         if (selectAllCheckbox) selectAllCheckbox.addEventListener('change', selectAllDishes);
         if (categorySelect) categorySelect.addEventListener('change', () => {
@@ -1725,8 +1765,12 @@
         if (exportExcelBtn) exportExcelBtn.addEventListener('click', handleExportExcel);
 
         if (clearHistoryConfirm) clearHistoryConfirm.addEventListener('click', confirmClearHistory);
-        if (clearHistoryCancel) clearHistoryCancel.addEventListener('click', () => clearHistoryModal.classList.remove('active'));
-        if (clearHistoryModal) clearHistoryModal.addEventListener('click', (e) => { if (e.target === clearHistoryModal) clearHistoryModal.classList.remove('active'); });
+        if (clearHistoryCancel) clearHistoryCancel.addEventListener('click', closeClearHistoryModal);
+        if (clearHistoryModal) clearHistoryModal.addEventListener('click', (e) => { if (e.target === clearHistoryModal) closeClearHistoryModal(); });
+        if (clearHistoryPassword) clearHistoryPassword.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); confirmClearHistory(); }
+            if (e.key === 'Escape') closeClearHistoryModal();
+        });
 
         if (emailOptionsClose) emailOptionsClose.addEventListener('click', closeEmailOptions);
         if (htmlOptionBtn) htmlOptionBtn.addEventListener('click', optionHTML);
@@ -1770,8 +1814,8 @@
                 else if (modal.classList.contains('active')) closeModal();
                 else if (emailOptionsModal.classList.contains('active')) closeEmailOptions();
                 else if (waModal.classList.contains('active')) closeWhatsAppModal();
-                else if (clearHistoryModal.classList.contains('active')) clearHistoryModal.classList.remove('active');
-                else if (bulkDeleteModal.classList.contains('active')) bulkDeleteModal.classList.remove('active');
+                else if (clearHistoryModal.classList.contains('active')) closeClearHistoryModal();
+                else if (bulkDeleteModal.classList.contains('active')) closeBulkDeleteModal();
             }
         });
 
